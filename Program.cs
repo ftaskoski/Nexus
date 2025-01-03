@@ -1,19 +1,27 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using Nexus.Data;
+using Nexus.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+builder.Services.AddSingleton<PasswordService>();
+
 
 
 var app = builder.Build();
-app.MapGet("/api/v1", () => "Hello World!");
-
 
 app.UseRouting();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+});
 
-app.UseEndpoints(e => { });
 app.UseStaticFiles();
-
 app.UseSpa(spa =>
 {
     spa.Options.SourcePath = "ClientApp";
@@ -23,6 +31,5 @@ app.UseSpa(spa =>
         spa.UseProxyToSpaDevelopmentServer("http://localhost:5173/");
     }
 });
-
 
 app.Run();

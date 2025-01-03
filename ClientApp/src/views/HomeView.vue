@@ -5,7 +5,7 @@ import { onMounted } from 'vue';
 onMounted(async() => {
 
 const res = await fetchy({
-  url: "v1",
+  url: "user/testuser",
   method: "GET"
  })
  console.log(res.payload);
