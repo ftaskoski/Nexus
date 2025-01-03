@@ -1,7 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc;
 using Nexus.Data;
 using Nexus.Models;
-using Nexus.Services;  
+using Nexus.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Nexus.DTOS;
 
 namespace Nexus.Controllers
 {
@@ -46,32 +51,31 @@ namespace Nexus.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateUser([FromBody] UserModel userModel)
+        public IActionResult CreateUser([FromBody] CreateUserDto userDto)
         {
-            if (userModel == null)
+            if (userDto == null)
             {
                 return BadRequest(new { message = "Invalid data" });
             }
 
             var existingUser = _dbContext.Users
-                .FirstOrDefault(u => u.Email == userModel.Email || u.Username == userModel.Username);
+                .FirstOrDefault(u => u.Email == userDto.Email || u.Username == userDto.Username);
 
             if (existingUser != null)
             {
                 return BadRequest(new { message = "User with this email or username already exists" });
             }
 
-            var salt = _passwordService.GenerateSalt(32); 
-
-            var hashedPassword = _passwordService.HashPassword(userModel.PasswordHash, salt); 
+            var salt = _passwordService.GenerateSalt(32);
+            var hashedPassword = _passwordService.HashPassword(userDto.Password, salt);
 
             var newUser = new UserModel
             {
                 Id = Guid.NewGuid(),
-                Email = userModel.Email,
-                Username = userModel.Username,
+                Email = userDto.Email,
+                Username = userDto.Username,
                 PasswordHash = hashedPassword,
-                Salt = salt, 
+                Salt = salt,
                 CreatedAt = DateTime.Now
             };
 
@@ -80,5 +84,60 @@ namespace Nexus.Controllers
 
             return CreatedAtAction(nameof(GetUserByUsername), new { username = newUser.Username }, newUser);
         }
+
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        {
+            if (loginDto == null || string.IsNullOrEmpty(loginDto.Email) || string.IsNullOrEmpty(loginDto.Password))
+            {
+                return BadRequest(new { message = "Invalid login data" });
+            }
+
+            var user = _dbContext.Users.FirstOrDefault(u => u.Email.ToLower() == loginDto.Email.ToLower());
+
+            if (user == null)
+            {
+                return Unauthorized(new { message = "Invalid email or password" });
+            }
+
+            var hashedPassword = _passwordService.HashPassword(loginDto.Password, user.Salt);
+
+            if (user.PasswordHash != hashedPassword)
+            {
+                return Unauthorized(new { message = "Invalid email or password" });
+            }
+
+            var claims = new List<Claim>
+    {
+        new(ClaimTypes.Name, user.Username),  
+        new(ClaimTypes.Email, user.Email),
+        new("UserId", user.Id.ToString())
+    };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
+
+            return Ok(new { message = "Login successful" });
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return Ok(new { message = "Logout successful" });
+        }
+
+        [Authorize]
+        [HttpGet("lookup")]
+        public IActionResult Lookup()
+        {
+            var isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
+            var username = User?.Identity?.Name;
+
+            return Ok(new { isAuthenticated, username });
+        }
+
+
     }
 }

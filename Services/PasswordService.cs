@@ -1,5 +1,5 @@
-﻿using System.Security.Cryptography;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using System.Security.Cryptography;
 
 namespace Nexus.Services
 {
@@ -7,13 +7,17 @@ namespace Nexus.Services
     {
         public string HashPassword(string password, string salt)
         {
-            return Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                password: password,
-                salt: Convert.FromBase64String(salt),
+            var saltBytes = Convert.FromBase64String(salt);
+            var hashBytes = KeyDerivation.Pbkdf2(
+                password: password, 
+                salt: saltBytes,
                 prf: KeyDerivationPrf.HMACSHA256,
                 iterationCount: 10000,
-                numBytesRequested: 256 / 8)); 
+                numBytesRequested: 256 / 8);
+            return Convert.ToBase64String(hashBytes);
         }
+
+
 
         public string GenerateSalt(int length)
         {
