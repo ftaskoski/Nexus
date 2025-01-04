@@ -15,7 +15,7 @@
   
 
 <script setup lang="ts">
-import { computed, defineProps } from 'vue'
+import { computed } from 'vue'
 import type { UtilsSize } from './types'
 interface Props {
   size?: UtilsSize
