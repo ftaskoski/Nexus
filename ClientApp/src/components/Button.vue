@@ -16,8 +16,7 @@
 
 <script setup lang="ts">
 import { computed, defineProps } from 'vue'
-import type { UtilsSize } from '@/types'
-
+import type { UtilsSize } from './types'
 interface Props {
   size?: UtilsSize
   type?: 'primary' | 'secondary' | 'tertiary' | 'skinny' | 'naked' | 'danger' | 'warning' | 'success' | 'info'

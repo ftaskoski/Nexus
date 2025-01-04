@@ -1,5 +1,5 @@
 import type { LooseAutoComplete } from './types'
-export type IconName = LooseAutoComplete< 'message' | 'email' | 'lock' | 'hidden-password' | 'visible-password' | 'loading' >
+export type IconName = LooseAutoComplete< 'message' | 'email' | 'lock' | 'hidden-password' | 'visible-password' | 'loading' | 'cancel' | 'none' |'error'>
 
 interface Icon {
   name: IconName
@@ -7,6 +7,10 @@ interface Icon {
 }
 
 export const icons: Icon[] = [
+  {
+    name : 'none',
+    path : [],
+  },
   {
     name : 'message',
     path : [ 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' ],
@@ -31,6 +35,15 @@ export const icons: Icon[] = [
     name : 'loading',
     path : [ 'M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z' ],
     
-  }
+  },
+  {
+    name : 'cancel',
+    path : [ 'M6 18L18 6M6 6l12 12' ],
+  },
+  {
+    name : 'error',
+    path : [ 'M12 7v6M12 17.01l.01-.011M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z' ],
+  },
+
   
 ]

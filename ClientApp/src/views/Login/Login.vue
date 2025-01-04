@@ -84,8 +84,16 @@
           Forgot password?
         </a>
       </div>
+
+      <Message class="mt-2 flex justify-center items-center" :show="error"  @close="error = false" type="error" >
+        <p>Invalid email or password</p>
+    </Message>
+
     </template>
+
   </Card>
+
+
 </template>
 
 <script setup lang="ts">
@@ -94,24 +102,31 @@ import Card from "@/components/Card.vue";
 import Icon from "@/components/Icon.vue";
 import Button from "@/components/Button.vue";
 import Input from "@/components/Input.vue";
+import Message from "@/components/Message.vue";
+import { fetchy } from "@/plugins/axios";
 
-const email = ref<string>("");
-const password = ref<string>("");
+const email = ref<string>("filip.taskoski69@gmail.com");
+const password = ref<string>("Filip@28");
 const loading = ref<boolean>(false);
 const showPassword = ref<boolean>(false);
+const error = ref<boolean>(false);
 
 const handleSubmit = async () => {
   loading.value = true;
-  try {
-    console.log("Form submitted:", {
-      email: email.value,
-      password: password.value,
-    });
-    await new Promise((resolve) => setTimeout(resolve, 10000));
-  } catch (error) {
-    console.error("Login error:", error);
-  } finally {
+  const response = await fetchy({
+    url: "user/login",
+    method: "POST",
+    data: { email: email.value, password: password.value },
+  });
+
+  if (response.payload) {
     loading.value = false;
   }
+
+  if (response.errors) {
+    loading.value = false;
+    error.value = true;
+  }
 };
+
 </script>

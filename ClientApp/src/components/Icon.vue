@@ -10,7 +10,7 @@ interface Props {
 }
 
 const props = withDefaults( defineProps<Props>(), {
-  icon  : '',
+  icon  : 'none',
   size  : '24px',
   color : 'currentColor',
   strokeWidth: '1.5'
