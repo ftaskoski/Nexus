@@ -105,8 +105,8 @@ import Input from "@/components/Input.vue";
 import Message from "@/components/Message.vue";
 import { fetchy } from "@/plugins/axios";
 
-const email = ref<string>("filip.taskoski69@gmail.com");
-const password = ref<string>("Filip@28");
+const email = ref<string>("");
+const password = ref<string>("");
 const loading = ref<boolean>(false);
 const showPassword = ref<boolean>(false);
 const error = ref<boolean>(false);
