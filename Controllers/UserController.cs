@@ -51,7 +51,7 @@ namespace Nexus.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateUser([FromBody] CreateUserDto userDto)
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto userDto)
         {
             if (userDto == null)
             {
@@ -82,7 +82,17 @@ namespace Nexus.Controllers
             _dbContext.Users.Add(newUser);
             _dbContext.SaveChanges();
 
-            return CreatedAtAction(nameof(GetUserByUsername), new { username = newUser.Username }, newUser);
+            var claims = new List<Claim>
+    {
+        new(ClaimTypes.Name, newUser.Username),
+        new(ClaimTypes.Email, newUser.Email),
+        new("UserId", newUser.Id.ToString())
+    };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
+
+            return CreatedAtAction(nameof(GetUserByUsername), new { username = newUser.Username }, new { message = "Account created and logged in" });
         }
 
 
