@@ -1,8 +1,6 @@
 import { ref } from 'vue';
 import { fetchy } from "../src/plugins/axios";
-import { useRouter } from "vue-router";
 
-const router = useRouter();
 
 export const isAuthenticated = ref<boolean>(false);
 
