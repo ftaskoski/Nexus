@@ -1,14 +1,28 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import {isAuthenticated} from '../authStore/store'
-//@ts-ignore
-import Nav from './components/Nav.vue';
+import { isAuthenticated } from '../authStore/store'
+import Nav from './components/Nav.vue'
+import { ref } from 'vue'
+import { onMounted } from 'vue'
 
+let isMounted = ref<boolean>(false)
+
+onMounted(() => isMounted.value = true)
 </script>
 
 <template>
-  
- <Nav v-if="isAuthenticated"/>
-  <RouterView />
+  <div class="relative">
+    <Nav v-if="isAuthenticated"/>
+    <main>
+      <RouterView />
+    </main>
+    <div 
+      id="panel-target"
+      class="fixed left-20 top-0 h-screen transition-all duration-300"
+      :class="{
+        'w-[400px] opacity-100': $route.meta?.panel,
+        'w-0 opacity-0': !$route.meta?.panel
+      }"
+    />
+  </div>
 </template>
-

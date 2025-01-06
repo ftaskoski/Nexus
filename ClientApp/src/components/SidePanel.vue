@@ -8,39 +8,27 @@
     </div>
   
       <div v-if="type === 'notifications'">
-        <div class="mb-4">
-          <h2 class="text-lg font-semibold">Notifications</h2>
-        </div>
-        <div class="space-y-4">
-          <div class="rounded-lg border p-4">
-            <p class="text-sm text-gray-600">No new notifications</p>
-          </div>
-        </div>
+        <NotificationsPanel />
       </div>
   
       <div v-if="type === 'messages'">
-        <div class="mb-4">
-          <h2 class="text-lg font-semibold">Messages</h2>
-        </div>
-        <div class="space-y-4">
-          <div class="rounded-lg border p-4">
-            <p class="text-sm text-gray-600">No new messages</p>
-          </div>
-        </div>
+        <MessagesPanel />
       </div>
+
     </div>
   </template>
   
 <script setup lang="ts">
-import { ref } from 'vue'
+
+import NotificationsPanel from './Panels/Notifications/NotificationsPanel.vue';  
+import MessagesPanel from './Panels/Messages/MessagesPanel.vue';
 import SearchPanel from './Panels/Search/SearchPanel.vue';
 import type { PanelType } from './types';
-  
+
 const props = defineProps<{
     type: PanelType
     isActive: boolean
   }>()
   
-  const searchQuery = ref('')
   
 </script>
