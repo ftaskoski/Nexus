@@ -2,13 +2,9 @@
   <Card>
     <template #header>
       <div class="text-center">
-        <div
-          class="mx-auto h-12 w-12 bg-blue-50 rounded-full flex items-center justify-center"
-        >
-          <Icon icon="message" color="#3b82f6"></Icon>
-        </div>
+ 
         <h2 class="mt-4 text-2xl font-semibold text-gray-900">
-          Welcome to Nexus
+          Welcome to <span class="logo">Nexus</span>
         </h2>
         <p class="mt-2 text-sm text-gray-500">Sign in to continue messaging</p>
       </div>
@@ -104,7 +100,6 @@ import Button from "@/components/Button.vue";
 import Input from "@/components/Input.vue";
 import Message from "@/components/Message.vue";
 import { fetchy } from "@/plugins/axios";
-
 const email = ref<string>("");
 const password = ref<string>("");
 const loading = ref<boolean>(false);
