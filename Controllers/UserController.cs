@@ -138,7 +138,6 @@ namespace Nexus.Controllers
             return Ok(new { message = "Logout successful" });
         }
 
-        [Authorize]
         [HttpGet("lookup")]
         public IActionResult Lookup()
         {

@@ -103,11 +103,15 @@ import Button from "@/components/Button.vue";
 import Input from "@/components/Input.vue";
 import Message from "@/components/Message.vue";
 import { fetchy } from "@/plugins/axios";
+import { successfulAuth } from "../../../authStore/store";
+import { useRouter } from "vue-router";
+
 const email = ref<string>("");
 const password = ref<string>("");
 const loading = ref<boolean>(false);
 const showPassword = ref<boolean>(false);
 const error = ref<boolean>(false);
+const router = useRouter();
 
 async function handleSubmit() {
   loading.value = true;
@@ -119,7 +123,8 @@ async function handleSubmit() {
 
   if (response.payload) {
     loading.value = false;
-  }
+    successfulAuth(router);
+    }
 
   if (response.errors) {
     loading.value = false;
