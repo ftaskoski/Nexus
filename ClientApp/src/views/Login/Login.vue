@@ -24,8 +24,10 @@
             required
             v-model="email"
             fillRule="evenodd"
+            :iconAlign="true"
           />
         </div>
+        
 
         <div class="space-y-1 relative">
           <Input
@@ -39,6 +41,7 @@
             required
             v-model="password"
             fillRule="evenodd"
+            :iconAlign="true"
           />
           <div
             @click="showPassword = !showPassword"
@@ -106,7 +109,7 @@ const loading = ref<boolean>(false);
 const showPassword = ref<boolean>(false);
 const error = ref<boolean>(false);
 
-const handleSubmit = async () => {
+async function handleSubmit() {
   loading.value = true;
   const response = await fetchy({
     url: "user/login",

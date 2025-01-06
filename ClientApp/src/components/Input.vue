@@ -10,6 +10,7 @@ interface Props {
   label?: string;
   icon?: string; 
   iconColor?: string;
+  iconAlign?: boolean;
   iconFill?: string;
   required?: boolean;
   fillRule?:string;
@@ -40,7 +41,7 @@ const updateValue = (event: Event) => {
     </label>
     <div class="relative">
       <div v-if="icon" class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <Icon :icon="icon" :color="iconColor" :fill-rule="fillRule" :fill="iconFill"  class="mt-1" />
+        <Icon :icon="icon" :color="iconColor" :fill-rule="fillRule" :fill="iconFill" :class="iconAlign ? 'mt-1' : ''" />
       </div>
       <input
         :id="id"
