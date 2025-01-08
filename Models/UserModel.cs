@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Nexus.Models
+﻿namespace Nexus.Models
 {
     public class UserModel
     {

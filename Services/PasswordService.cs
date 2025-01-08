@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Nexus.Interfaces;
 using System.Security.Cryptography;
 
 namespace Nexus.Services
 {
-    public class PasswordService
+    public class PasswordService : IPasswordService
     {
         public string HashPassword(string password, string salt)
         {
             var saltBytes = Convert.FromBase64String(salt);
             var hashBytes = KeyDerivation.Pbkdf2(
-                password: password, 
+                password: password,
                 salt: saltBytes,
                 prf: KeyDerivationPrf.HMACSHA256,
                 iterationCount: 10000,

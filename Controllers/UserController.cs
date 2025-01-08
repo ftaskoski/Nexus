@@ -7,6 +7,7 @@ using Nexus.Services;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Nexus.DTOS;
+using Nexus.Interfaces;
 
 namespace Nexus.Controllers
 {
@@ -15,16 +16,19 @@ namespace Nexus.Controllers
     public class UserController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
-        private readonly PasswordService _passwordService;
+        private readonly IPasswordService _passwordService;
+        private readonly ISystemUser _systemUser;
 
-        public UserController(AppDbContext dbContext, PasswordService passwordService)
+        public UserController(AppDbContext dbContext, 
+            IPasswordService passwordService, 
+            ISystemUser systemUser)
         {
             _dbContext = dbContext;
             _passwordService = passwordService; 
+            _systemUser = systemUser;
         }
 
-        [HttpGet("{username}")]
-        public ActionResult<UserModel> GetUserByUsername(string username)
+        private ActionResult<UserModel> GetUserByUsername(string username)
         {
             var user = _dbContext.Users.FirstOrDefault(u => u.Username == username);
             if (user == null)
@@ -147,6 +151,25 @@ namespace Nexus.Controllers
             return Ok(new { isAuthenticated, username });
         }
 
+        [HttpGet("{username}")]
+        public ActionResult<IEnumerable<UserSummaryDto>> SearchUsers(string username)
+        {
+            var users = _dbContext.Users
+                .Where(x => x.Username.StartsWith(username) && x.Id != _systemUser.Id)
+                .Select(u => new UserSummaryDto
+                {
+                    Id = u.Id,
+                    Username = u.Username
+                })
+                .ToList();
+
+            if (users.Count == 0)
+            {
+                return NotFound($"User with username '{username}' not found.");
+            }
+
+            return Ok(users);
+        }
 
     }
 }

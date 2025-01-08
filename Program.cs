@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Nexus.Data;
+using Nexus.Interfaces;
 using Nexus.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,8 +10,9 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
-builder.Services.AddSingleton<PasswordService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ISystemUser, SystemUser>();
+builder.Services.AddSingleton<IPasswordService, PasswordService>();
 
 builder.Services.AddAuthentication(options =>
 {
