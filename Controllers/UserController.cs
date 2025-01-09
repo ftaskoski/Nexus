@@ -19,12 +19,12 @@ namespace Nexus.Controllers
         private readonly IPasswordService _passwordService;
         private readonly ISystemUser _systemUser;
 
-        public UserController(AppDbContext dbContext, 
-            IPasswordService passwordService, 
+        public UserController(AppDbContext dbContext,
+            IPasswordService passwordService,
             ISystemUser systemUser)
         {
             _dbContext = dbContext;
-            _passwordService = passwordService; 
+            _passwordService = passwordService;
             _systemUser = systemUser;
         }
 
@@ -124,7 +124,7 @@ namespace Nexus.Controllers
 
             var claims = new List<Claim>
     {
-        new(ClaimTypes.Name, user.Username),  
+        new(ClaimTypes.Name, user.Username),
         new(ClaimTypes.Email, user.Email),
         new("UserId", user.Id.ToString())
     };
@@ -149,26 +149,6 @@ namespace Nexus.Controllers
             var username = User?.Identity?.Name;
 
             return Ok(new { isAuthenticated, username });
-        }
-
-        [HttpGet("{username}")]
-        public ActionResult<IEnumerable<UserSummaryDto>> SearchUsers(string username)
-        {
-            var users = _dbContext.Users
-                .Where(x => x.Username.StartsWith(username) && x.Id != _systemUser.Id)
-                .Select(u => new UserSummaryDto
-                {
-                    Id = u.Id,
-                    Username = u.Username
-                })
-                .ToList();
-
-            if (users.Count == 0)
-            {
-                return NotFound($"User with username '{username}' not found.");
-            }
-
-            return Ok(users);
         }
 
     }

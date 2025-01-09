@@ -12,5 +12,7 @@ namespace Nexus.Data
         }
 
         public DbSet<UserModel> Users { get; set; } = null!;
+        public DbSet<FriendRequestModel> FriendRequests { get; set; } = null!;
+
     }
 }

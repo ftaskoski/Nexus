@@ -22,26 +22,33 @@
     </div>
 
     <div class="space-y-2 mt-4">
-      <NavigationRow v-for="result in searchResults" :key="result.id">
-        <div class="flex items-center gap-3">
-          <div
-            class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center"
-          >
-            <Icon icon="user" size="20" class="text-blue-600" />
-          </div>
-          <span class="font-medium">{{ result.username }}</span>
-        </div>
+    <NavigationRow v-for="result in searchResults" :key="result.id">
+      <div class="flex items-center gap-3">
         <div
-          class="p-2 rounded-full hover:bg-gray-100 transition-colors group cursor-pointer"
-          title="Add friend"
+          class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center"
         >
-          <Icon
-            icon="add-user"
-            class="text-gray-500 group-hover:text-blue-600"
-          />
+          <Icon icon="user" size="20" class="text-blue-600" />
         </div>
-      </NavigationRow>
-    </div>
+        <span class="font-medium">{{ result.username }}</span>
+      </div>
+      <div
+        class="p-2 rounded-full hover:bg-gray-100 transition-colors group cursor-pointer"
+       :title="result.status === null ? 'Add friend' : 'Pending friend request'"
+        @click="result.status === null && sendFriendRequest(result.id)"
+      >
+        <Icon
+          v-if="result.status === null"
+          icon="add-user"
+          class="text-gray-500 group-hover:text-blue-600"
+        />
+        <Icon
+          v-else-if="result.status === 0"
+          icon="pending"
+          class="text-gray-500 group-hover:text-blue-600"
+        />
+      </div>
+    </NavigationRow>
+  </div>
   </div>
 </template>
 
@@ -49,7 +56,7 @@
 import { ref } from "vue";
 import Input from "@/components/Input.vue";
 import { fetchy } from "@/plugins/axios";
-import type { UserSearchResult } from "./types";
+import  type { UserSearchResult } from "./types";
 import Icon from "@/components/Icon.vue";
 import NavigationRow from "@/components/NavigationRow.vue";
 
@@ -63,12 +70,26 @@ async function searchForFriends() {
   clearTimeout(debounce);
   debounce = setTimeout(async () => {
     const res = await fetchy<UserSearchResult[]>({
-      url: `user/${searchQuery.value}`,
+      url: `friendrequests/${searchQuery.value}`,
       method: "GET",
     });
 
     searchResults.value = res.payload || [];
   }, 500);
+}
+
+
+async function sendFriendRequest(receiverId: string) {
+    const res = await fetchy({
+      url: "friendrequests/add-friend",
+      method: "POST",
+      data: { receiverId },
+    });
+    const user = searchResults.value.find((u) => u.id === receiverId);
+    if (user) {
+      user.status = 0;
+    }
+
 }
 
 function clearSearch() {

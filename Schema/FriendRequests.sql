@@ -1,0 +1,10 @@
+CREATE TABLE FriendRequests (
+    Id UNIQUEIDENTIFIER PRIMARY KEY,
+    SenderId UNIQUEIDENTIFIER NOT NULL,
+    ReceiverId UNIQUEIDENTIFIER NOT NULL,
+    Status INT NOT NULL, 
+    CreatedAt DATETIME2 NOT NULL,
+
+    CONSTRAINT FK_FriendRequests_Sender FOREIGN KEY (SenderId) REFERENCES Users(Id),
+    CONSTRAINT FK_FriendRequests_Receiver FOREIGN KEY (ReceiverId) REFERENCES Users(Id)
+);
