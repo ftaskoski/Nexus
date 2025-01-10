@@ -26,16 +26,19 @@ namespace Nexus.Controllers
         {
             var usersWithStatus = _dbContext.Users
                 .Where(x => x.Username.StartsWith(username) && x.Id != _systemUser.Id)
-                .Select(u => new UserSummaryDto
-                {
-                    Id = u.Id,
-                    Username = u.Username,
-                    Status = (FriendRequestStatus?)_dbContext.FriendRequests
-                        .Where(fr => (fr.SenderId == _systemUser.Id && fr.ReceiverId == u.Id) ||
-                                     (fr.ReceiverId == _systemUser.Id && fr.SenderId == u.Id))
-                        .Select(fr => (int?)fr.Status)
-                        .FirstOrDefault()
-                })
+             .Select(u => new UserSummaryDto
+             {
+                 Id = u.Id,
+                 Username = u.Username,
+                 Status = (FriendRequestStatus?)_dbContext.FriendRequests
+        .Where(fr => (fr.SenderId == _systemUser.Id && fr.ReceiverId == u.Id) ||
+                     (fr.ReceiverId == _systemUser.Id && fr.SenderId == u.Id))
+        .Select(fr => (int?)fr.Status)
+        .FirstOrDefault(),
+                 IsIncoming = _dbContext.FriendRequests
+        .Any(fr => fr.ReceiverId == _systemUser.Id && fr.SenderId == u.Id)
+             })
+
                 .ToList();
 
             if (usersWithStatus.Count == 0)
@@ -45,6 +48,7 @@ namespace Nexus.Controllers
 
             return Ok(usersWithStatus);
         }
+
 
         [HttpPost("add-friend")]
         public IActionResult SendFriendRequest([FromBody] FriendRequestDto friendRequestDto)
@@ -63,7 +67,7 @@ namespace Nexus.Controllers
                 return BadRequest(new { message = "Friend request already exists" });
             }
 
-            var friendRequest = new FriendRequest
+            var friendRequest = new FriendRequestModel
             {
                 Id = Guid.NewGuid(),
                 SenderId = _systemUser.Id,

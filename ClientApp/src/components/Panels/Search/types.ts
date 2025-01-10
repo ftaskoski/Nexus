@@ -8,4 +8,5 @@ export interface UserSearchResult {
     id: string
     username: string
     status: FriendRequestStatus | null
+    isIncoming: boolean
 }

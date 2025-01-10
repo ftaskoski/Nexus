@@ -1,6 +1,6 @@
 import type { LooseAutoComplete } from './types'
 export type IconName = LooseAutoComplete< 'message' | 'email' | 'lock' | 'hidden-password' | 'visible-password' | 'loading' | 'cancel' | 'none' |'error' | 'user' | 'search'
-| 'add-user' | 'pending'>
+| 'add-user' | 'pending' | 'incoming-friend-request'>
 
 interface Icon {
   name: IconName
@@ -70,6 +70,15 @@ export const icons: Icon[] = [
     path: [
       'M12 2a10 10 0 100 20 10 10 0 000-20z', 
       'M12 6v6l4 2', 
+    ],
+  },
+  {
+    name: 'incoming-friend-request',
+    path: [
+      'M8 11a3 3 0 100-6 3 3 0 000 6z',
+      'M2 19v-2a4 4 0 014-4h4a4 4 0 014 4v2',
+      'M16 5c0-1 1-2 2-2s2 1 2 2c0 1-1 1.5-2 2s-1 .5-1 1v1', 
+      'M17 13h.01',
     ],
   }
   

@@ -7,6 +7,8 @@ namespace Nexus.DTOS
         public Guid Id { get; set; }
         public string Username { get; set; }
         public FriendRequestStatus? Status { get; set; }
+        public bool IsIncoming { get; set; } 
+
 
     }
 
