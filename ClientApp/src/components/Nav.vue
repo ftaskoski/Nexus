@@ -120,6 +120,9 @@ function toHome() {
 }
 
 function handleItemClick(item: NavItem) {
+
+  if(isLinkActive(item)) return
+
   if (item.hasPanel) {
     activePanelType.value =
       activePanelType.value === (item.id as PanelType)
