@@ -82,8 +82,11 @@ function handleFriendAction(result: UserSearchResult) {
 }
 
 async function searchForFriends() {
+  if (!searchQuery.value.trim()) {
+    searchResults.value = [];
+    return;
+  }
   searchResults.value = [];
-
   clearTimeout(debounce);
   debounce = setTimeout(async () => {
     const res = await fetchy<UserSearchResult[]>({

@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Nexus.Data;
 using Nexus.DTOS;
+using Nexus.Hubs;
 using Nexus.Interfaces;
 using Nexus.Models;
 
@@ -12,13 +14,16 @@ namespace Nexus.Controllers
     {
         private readonly AppDbContext _dbContext;
         private readonly ISystemUser _systemUser;
+        private readonly IHubContext<NotificationsHub> _hubContext;
 
 
-        public FriendRequestsController(AppDbContext dbContext, ISystemUser systemUser)
+        public FriendRequestsController(AppDbContext dbContext, ISystemUser systemUser, IHubContext<NotificationsHub> hubContext)
         {
             _dbContext = dbContext;
             _systemUser = systemUser;
+            _hubContext = hubContext;
         }
+
 
 
         [HttpGet("{username}")]
@@ -51,7 +56,7 @@ namespace Nexus.Controllers
 
 
         [HttpPost("add-friend")]
-        public IActionResult SendFriendRequest([FromBody] FriendRequestDto friendRequestDto)
+        public async Task<IActionResult> SendFriendRequest([FromBody] FriendRequestDto friendRequestDto)
         {
             if (friendRequestDto == null || friendRequestDto.ReceiverId == Guid.Empty)
             {
@@ -79,8 +84,51 @@ namespace Nexus.Controllers
             _dbContext.FriendRequests.Add(friendRequest);
             _dbContext.SaveChanges();
 
+            var receiverId = friendRequestDto.ReceiverId.ToString();
+
+            try
+            {
+                await _hubContext.Clients.Group(receiverId)
+                    .SendAsync("ReceiveNotification", new NotificationModel
+                    {
+                        Id = friendRequest.Id,
+                        SenderId = _systemUser.Id,
+                        Message = "You have a new friend request!",
+                        SenderName = _systemUser.Username!,
+                        Type = "FriendRequest"
+                    });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending notification: {ex.Message}");
+            }
+
             return Ok(new { message = "Friend request sent" });
         }
+        [HttpGet("notifications")]
+        public IActionResult GetNotifications()
+        {
+            var notifications = _dbContext.FriendRequests
+                .Where(fr => fr.ReceiverId == _systemUser.Id || fr.SenderId == _systemUser.Id)
+                .Select(fr => new NotificationModel
+                {
+                    Id = fr.Id,
+                    SenderId = fr.SenderId,
+                    SenderName = _dbContext.Users 
+                        .Where(u => u.Id == fr.SenderId)
+                        .Select(u => u.Username)
+                        .FirstOrDefault() ?? "Unknown",
+                    Message = fr.Status == FriendRequestStatus.Pending
+                        ? "You have a pending friend request."
+                        : "Friend request status updated.",
+                    Type = "FriendRequest"
+                })
+                .ToList();
+
+            return Ok(notifications);
+        }
+
+
 
     }
 }

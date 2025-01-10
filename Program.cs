@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Nexus.Data;
+using Nexus.Hubs;
 using Nexus.Interfaces;
 using Nexus.Services;
 
@@ -10,6 +11,7 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddSignalR();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ISystemUser, SystemUser>();
 builder.Services.AddSingleton<IPasswordService, PasswordService>();
@@ -51,5 +53,6 @@ app.UseSpa(spa =>
         spa.UseProxyToSpaDevelopmentServer("http://localhost:5173/");
     }
 });
+app.MapHub<NotificationsHub>("/hubs/notifications").RequireAuthorization();
 
 app.Run();
