@@ -14,40 +14,75 @@
       :isActive="!!activePanelType"
     />
 
-    <nav class="space-y-1">
-    
-      <router-link
-        v-for="item in menuItems"
-        :key="item.id"
-        :to="item.to || '/'"
-        class="group flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200 ease-in-out"
-        :class="[
-          isLinkActive(item)
-            ? 'bg-gray-100 text-black'
-            : 'text-gray-600 hover:bg-gray-50',
-          activePanelType ? 'justify-center' : 'w-full',
-        ]"
-        @click="handleItemClick(item)"
-      >
-        <svg
-          class="h-6 w-6 transition-transform duration-200 ease-in-out group-hover:scale-110"
-          :class="!activePanelType ? 'mr-4' : ''"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          v-html="item.icon"
-        ></svg>
-        <span
-          v-if="!activePanelType"
-          class="transform transition-all duration-200 ease-in-out group-hover:translate-x-1 group-hover:font-semibold"
-        >
-          {{ item.label }}
-        </span>
-      </router-link>
-    </nav>
+    <nav class="flex h-[calc(100%-90px)] flex-col space-y-1">
+  <router-link
+    v-for="item in menuItems.filter(i => i.id !== 'logout')"
+    :key="item.id"
+    :to="item.to || '/'"
+    class="group flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200 ease-in-out"
+    :class="[ 
+      isLinkActive(item)
+        ? 'bg-gray-100 text-black'
+        : 'text-gray-600 hover:bg-gray-50',
+      activePanelType ? 'justify-center' : 'w-full',
+    ]"
+    @click="handleItemClick(item)"
+  >
+    <svg
+      class="h-6 w-6 transition-transform duration-200 ease-in-out group-hover:scale-110"
+      :class="!activePanelType ? 'mr-4' : ''"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      v-html="item.icon"
+    ></svg>
+    <span
+      v-if="!activePanelType"
+      class="transform transition-all duration-200 ease-in-out group-hover:translate-x-1 group-hover:font-semibold"
+    >
+      {{ item.label }}
+    </span>
+  </router-link>
+  
+  <div class="flex-grow"></div>
+  
+  <router-link
+    v-for="item in menuItems.filter(i => i.id === 'logout')"
+    :key="item.id"
+    :to="item.to || '/'"
+    class="group flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200 ease-in-out"
+    :class="[ 
+      isLinkActive(item)
+        ? 'bg-gray-100 text-black'
+        : 'text-gray-600 hover:bg-gray-50',
+      activePanelType ? 'justify-center' : 'w-full',
+    ]"
+    @click="handleLogout"
+  >
+    <svg
+      class="h-6 w-6 transition-transform duration-200 ease-in-out group-hover:scale-110"
+      :class="!activePanelType ? 'mr-4' : ''"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      v-html="item.icon"
+    ></svg>
+    <span
+      v-if="!activePanelType"
+      class="transform transition-all duration-200 ease-in-out group-hover:translate-x-1 group-hover:font-semibold"
+    >
+      {{ item.label }}
+    </span>
+  </router-link>
+</nav>
+
+
   </div>
 </template>
 
@@ -56,6 +91,8 @@ import { ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import SidePanel from "./SidePanel.vue";
 import type { NavItem, PanelType } from "./types";
+import { fetchy } from "@/plugins/axios";
+import { isAuthenticated } from "../../authStore/store";
 
 const router = useRouter();
 const route = useRoute();
@@ -95,7 +132,22 @@ const menuItems: NavItem[] = [
     to: "/notifications",
     hasPanel: true,
   },
+  {
+    id: "logout",
+    icon: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />',
+    label: "Logout",
+    to: "/login"
+  }
 ];
+
+async function handleLogout() {
+  await fetchy({ 
+    url: "user/logout",
+    method: "POST" 
+  });
+  isAuthenticated.value = false
+  router.push("/login")
+}
 
 watch(
   () => route.path,
@@ -120,8 +172,7 @@ function toHome() {
 }
 
 function handleItemClick(item: NavItem) {
-
-  if(isLinkActive(item)) return
+  if (isLinkActive(item)) return;
 
   if (item.hasPanel) {
     activePanelType.value =

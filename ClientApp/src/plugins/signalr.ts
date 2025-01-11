@@ -6,19 +6,13 @@ const connection = new signalR.HubConnectionBuilder()
         skipNegotiation: false,
         transport: signalR.HttpTransportType.WebSockets
     })
-    .configureLogging(signalR.LogLevel.Debug)
     .withAutomaticReconnect([0, 2000, 10000, 30000])
     .build();
 
 const SignalRPlugin = {
     install(app: any) {
         connection.start()
-            .then(() => {
-                console.log("SignalR Connected successfully");
-            })
-            .catch(err => {
-                console.error("SignalR Connection Error:", err);
-            });
+
 
         app.config.globalProperties.$signalR = connection;
         app.provide('signalR', connection);

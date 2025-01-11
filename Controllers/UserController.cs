@@ -28,7 +28,7 @@ namespace Nexus.Controllers
             _systemUser = systemUser;
         }
 
-        private ActionResult<UserModel> GetUserByUsername(string username)
+        public ActionResult<UserModel> GetUserByUsername(string username)
         {
             var user = _dbContext.Users.FirstOrDefault(u => u.Username == username);
             if (user == null)
