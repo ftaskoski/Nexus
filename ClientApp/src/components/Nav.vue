@@ -10,36 +10,36 @@
 
     <nav class="flex h-[calc(100%-90px)] flex-col space-y-1">
       <router-link
-        v-for="item in menuItems.filter((i) => i.id !== 'logout')"
-        :key="item.id"
-        :to="item.to || '/'"
-        class="group flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200 ease-in-out"
-        :class="[
-          isLinkActive(item)
-            ? 'bg-gray-100 text-black'
-            : 'text-gray-600 hover:bg-gray-50',
-          activePanelType ? 'justify-center' : 'w-full',
-        ]"
-        @click="handleItemClick(item)"
-      >
-        <svg
-          class="h-6 w-6 transition-transform duration-200 ease-in-out group-hover:scale-110"
-          :class="!activePanelType ? 'mr-4' : ''"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          v-html="item.icon"
-        ></svg>
-        <span
-          v-if="!activePanelType"
-          class="transform transition-all duration-200 ease-in-out group-hover:translate-x-1 group-hover:font-semibold"
-        >
-          {{ item.label }}
-        </span>
-      </router-link>
+  v-for="item in menuItems.filter((i) => i.id !== 'logout')"
+  :key="item.id"
+  :to="item.to || '/'"
+  class="group relative flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200 ease-in-out"
+  :class="[isLinkActive(item) ? 'bg-gray-100 text-black' : 'text-gray-600 hover:bg-gray-50', activePanelType ? 'justify-center' : 'w-full']"
+  @click="handleItemClick(item)"
+>
+  <svg
+    class="h-6 w-6 transition-transform duration-200 ease-in-out group-hover:scale-110"
+    :class="!activePanelType ? 'mr-4' : ''"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    v-html="item.icon"
+  ></svg>
+  
+    <span v-if="item.id === 'notifications' && notificationsCount > 0" class="absolute top-0 right-0 ml-4 mr-2 h-4 w-4 rounded-full bg-red-500 text-center text-xs font-bold text-white" > {{ notificationsCount }} </span>
+
+    <span
+      v-if="!activePanelType"
+      class="transform transition-all duration-200 ease-in-out group-hover:translate-x-1 group-hover:font-semibold"
+    >
+      {{ item.label }}
+    </span>
+
+</router-link>
+
 
       <div class="flex-grow"></div>
 
@@ -84,6 +84,7 @@ import { useRouter, useRoute } from "vue-router";
 import type { NavItem, PanelType } from "./types";
 import { fetchy } from "@/plugins/axios";
 import { isAuthenticated } from "../../authStore/store";
+import { notificationsCount } from "./Panels/Notifications/store";
 
 const router = useRouter();
 const route = useRoute();
@@ -209,4 +210,6 @@ function isLinkActive(item: NavItem): boolean {
   justify-content: center;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+
 </style>

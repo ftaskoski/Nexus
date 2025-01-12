@@ -22,7 +22,7 @@
     </div>
 
     <div class="space-y-2 mt-4">
-      <NavigationRow v-for="result in searchResults" :key="result.id">
+      <SearchRow v-for="result in searchResults" :key="result.id">
         <div class="flex items-center gap-3">
           <div
             class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center"
@@ -41,18 +41,18 @@
             class="text-gray-500 group-hover:text-blue-600"
           />
         </div>
-      </NavigationRow>
+      </SearchRow>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import Input from "@/components/Input.vue";
 import { fetchy } from "@/plugins/axios";
 import type { UserSearchResult } from "./types";
 import Icon from "@/components/Icon.vue";
-import NavigationRow from "@/components/NavigationRow.vue";
+import SearchRow from "@/components/Rows/SearchRow.vue";
 
 const searchQuery = ref<string>("");
 let debounce: number | undefined = undefined;

@@ -109,12 +109,12 @@ namespace Nexus.Controllers
         public IActionResult GetNotifications()
         {
             var notifications = _dbContext.FriendRequests
-                .Where(fr => fr.ReceiverId == _systemUser.Id || fr.SenderId == _systemUser.Id)
+                .Where(fr => fr.ReceiverId == _systemUser.Id)
                 .Select(fr => new NotificationModel
                 {
                     Id = fr.Id,
                     SenderId = fr.SenderId,
-                    SenderName = _dbContext.Users 
+                    SenderName = _dbContext.Users
                         .Where(u => u.Id == fr.SenderId)
                         .Select(u => u.Username)
                         .FirstOrDefault() ?? "Unknown",
@@ -128,6 +128,18 @@ namespace Nexus.Controllers
             return Ok(notifications);
         }
 
+        [HttpDelete("delete/{id}")]
+        public IActionResult DeleteNotification(string id)
+        {
+            var notificationId = new Guid(id);
+            var notif = _dbContext.FriendRequests.FirstOrDefault(x => x.Id == notificationId);
+
+            _dbContext.FriendRequests.Remove(notif!);
+            _dbContext.SaveChanges();
+
+            return Ok();
+
+        }
 
 
     }

@@ -1,5 +1,5 @@
 export type Notification = {
-    id: number;
+    id: string;
     message: string;
     type: string;
     senderId: string;
