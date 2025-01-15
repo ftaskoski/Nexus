@@ -7,7 +7,6 @@ CREATE TABLE Friendships (
     CONSTRAINT FK_Friendships_User1 FOREIGN KEY (User1Id) REFERENCES Users(Id),
     CONSTRAINT FK_Friendships_User2 FOREIGN KEY (User2Id) REFERENCES Users(Id),
     
-    CONSTRAINT UQ_Friendships_User1_User2 UNIQUE (User1Id, User2Id)
 );
 
 

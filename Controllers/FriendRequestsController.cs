@@ -173,19 +173,14 @@ namespace Nexus.Controllers
                 return BadRequest("Friendship already exists");
             }
 
-            var sender = friendRequest.SenderId;
-            var receiver = friendRequest.ReceiverId;
-
-            if (sender > receiver)
-            {
-                (receiver, sender) = (sender, receiver);
-            }
+  
+      
 
             var friendship = new FriendshipModel
             {
                 Id = Guid.NewGuid(),
-                User1Id = sender,
-                User2Id = receiver,
+                User1Id = friendRequest.SenderId,
+                User2Id = friendRequest.ReceiverId,
                 CreatedAt = DateTime.Now
             };
 
