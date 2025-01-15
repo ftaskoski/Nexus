@@ -31,19 +31,22 @@ namespace Nexus.Controllers
         {
             var usersWithStatus = _dbContext.Users
                 .Where(x => x.Username.StartsWith(username) && x.Id != _systemUser.Id)
-             .Select(u => new UserSummaryDto
-             {
-                 Id = u.Id,
-                 Username = u.Username,
-                 Status = (FriendRequestStatus?)_dbContext.FriendRequests
-        .Where(fr => (fr.SenderId == _systemUser.Id && fr.ReceiverId == u.Id) ||
-                     (fr.ReceiverId == _systemUser.Id && fr.SenderId == u.Id))
-        .Select(fr => (int?)fr.Status)
-        .FirstOrDefault(),
-                 IsIncoming = _dbContext.FriendRequests
-        .Any(fr => fr.ReceiverId == _systemUser.Id && fr.SenderId == u.Id)
-             })
-
+                .Select(u => new UserSummaryDto
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    Status = _dbContext.Friendships
+                        .Any(f => (f.User1Id == _systemUser.Id && f.User2Id == u.Id) ||
+                                  (f.User2Id == _systemUser.Id && f.User1Id == u.Id))
+                        ? FriendRequestStatus.Accepted
+                        : (FriendRequestStatus?)_dbContext.FriendRequests
+                            .Where(fr => (fr.SenderId == _systemUser.Id && fr.ReceiverId == u.Id) ||
+                                         (fr.ReceiverId == _systemUser.Id && fr.SenderId == u.Id))
+                            .Select(fr => (int?)fr.Status)
+                            .FirstOrDefault(),
+                    IsIncoming = _dbContext.FriendRequests
+                        .Any(fr => fr.ReceiverId == _systemUser.Id && fr.SenderId == u.Id)
+                })
                 .ToList();
 
             if (usersWithStatus.Count == 0)
@@ -53,6 +56,8 @@ namespace Nexus.Controllers
 
             return Ok(usersWithStatus);
         }
+
+
 
 
         [HttpPost("add-friend")]
@@ -105,6 +110,7 @@ namespace Nexus.Controllers
 
             return Ok(new { message = "Friend request sent" });
         }
+
         [HttpGet("notifications")]
         public IActionResult GetNotifications()
         {
@@ -128,7 +134,7 @@ namespace Nexus.Controllers
             return Ok(notifications);
         }
 
-        [HttpDelete("delete/{id}")]
+        [HttpDelete("decline/{id}")]
         public IActionResult DeleteNotification(string id)
         {
             var notificationId = new Guid(id);
@@ -140,6 +146,66 @@ namespace Nexus.Controllers
             return Ok();
 
         }
+
+        [HttpPost("accept/{id}")]
+        public IActionResult AcceptFriendRequest(string id)
+        {
+            var requestId = new Guid(id);
+            var friendRequest = _dbContext.FriendRequests
+                .FirstOrDefault(fr => fr.Id == requestId && fr.ReceiverId == _systemUser.Id);
+
+            if (friendRequest == null)
+            {
+                return NotFound("Friend request not found");
+            }
+
+            if (friendRequest.Status != FriendRequestStatus.Pending)
+            {
+                return BadRequest("Friend request has already been processed");
+            }
+
+            var existingFriendship = _dbContext.Friendships.FirstOrDefault(f =>
+                (f.User1Id == friendRequest.SenderId && f.User2Id == friendRequest.ReceiverId) ||
+                (f.User1Id == friendRequest.ReceiverId && f.User2Id == friendRequest.SenderId));
+
+            if (existingFriendship != null)
+            {
+                return BadRequest("Friendship already exists");
+            }
+
+            var sender = friendRequest.SenderId;
+            var receiver = friendRequest.ReceiverId;
+
+            if (sender > receiver)
+            {
+                (receiver, sender) = (sender, receiver);
+            }
+
+            var friendship = new FriendshipModel
+            {
+                Id = Guid.NewGuid(),
+                User1Id = sender,
+                User2Id = receiver,
+                CreatedAt = DateTime.Now
+            };
+
+            try
+            {
+                _dbContext.FriendRequests.Remove(friendRequest);
+                _dbContext.Friendships.Add(friendship);
+                _dbContext.SaveChanges();
+
+                return Ok(new { message = "Friend request accepted" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving friendship: {ex.Message}");
+                throw;
+            }
+        }
+
+
+
 
 
     }

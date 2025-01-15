@@ -63,6 +63,7 @@ function getIconTitle(result: UserSearchResult): string {
   if (result.status === 0) {
     return result.isIncoming ? "User sent you a friend request" : "Pending friend request";
   }
+  if(result.status === 1) return "You are already friends";
   return "";
 }
 
@@ -71,6 +72,7 @@ function getIconType(result: UserSearchResult): string {
   if (result.status === 0) {
     return result.isIncoming ? "incoming-friend-request" : "pending";
   }
+  if(result.status === 1) return "accept-friend-request";
   return "add-user"; 
 }
 
