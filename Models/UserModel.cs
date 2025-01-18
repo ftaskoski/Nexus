@@ -8,6 +8,7 @@
         public string PasswordHash { get; set; }
         public string Salt { get; set; }
         public DateTime CreatedAt { get; set; }
+        public bool IsOnline { get; set; }
     }
 
 

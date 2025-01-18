@@ -71,7 +71,7 @@ import { notificationsCount, notifications, handleNotification } from "./store";
 import { getNotifications } from "./store";
 import { fetchy } from "@/plugins/axios";
 
-const signalR = inject("signalR") as HubConnection;
+const signalR = inject("signalR2") as HubConnection;
 
 async function declineFriendRequest(id: string) {
   await fetchy({
@@ -102,15 +102,12 @@ onMounted(async () => {
 
   if (!signalR) return;
 
-  try {
     signalR.on("ReceiveNotification", handleNotification);
 
     if (signalR.state === HubConnectionState.Disconnected) {
       await signalR.start();
     }
-  } catch (err) {
-    console.error("SignalR connection error:", err);
-  }
+ 
 });
 
 onUnmounted(() => {

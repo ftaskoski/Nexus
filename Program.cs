@@ -54,5 +54,7 @@ app.UseSpa(spa =>
     }
 });
 app.MapHub<NotificationsHub>("/hubs/notifications").RequireAuthorization();
+app.MapHub<OnlineUsersHub>("/hubs/onlineUsers").RequireAuthorization();
+
 
 app.Run();

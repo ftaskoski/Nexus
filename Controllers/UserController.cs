@@ -8,6 +8,9 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Nexus.DTOS;
 using Nexus.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
+using Nexus.Hubs;
 
 namespace Nexus.Controllers
 {
@@ -18,14 +21,18 @@ namespace Nexus.Controllers
         private readonly AppDbContext _dbContext;
         private readonly IPasswordService _passwordService;
         private readonly ISystemUser _systemUser;
+        private readonly IHubContext<OnlineUsersHub> _hubContext;
 
         public UserController(AppDbContext dbContext,
             IPasswordService passwordService,
-            ISystemUser systemUser)
+            ISystemUser systemUser,
+            IHubContext<OnlineUsersHub> hubContext)
         {
             _dbContext = dbContext;
             _passwordService = passwordService;
             _systemUser = systemUser;
+            _hubContext = hubContext; 
+
         }
 
         public ActionResult<UserModel> GetUserByUsername(string username)
@@ -109,6 +116,7 @@ namespace Nexus.Controllers
             }
 
             var user = _dbContext.Users.FirstOrDefault(u => u.Email.ToLower() == loginDto.Email.ToLower());
+            
 
             if (user == null)
             {
@@ -121,6 +129,14 @@ namespace Nexus.Controllers
             {
                 return Unauthorized(new { message = "Invalid email or password" });
             }
+
+           
+                user.IsOnline = true;
+                _dbContext.Users.Update(user);
+                await _dbContext.SaveChangesAsync();
+                await _hubContext.Clients.All.SendAsync("UserStatusChanged", user.Id.ToString(), user.Username, true);
+            
+        
 
             var claims = new List<Claim>
     {
@@ -138,6 +154,22 @@ namespace Nexus.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
+            var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "UserId");
+
+            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out Guid userId))
+            {
+                var user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
+
+                if (user != null)
+                {
+                    user.IsOnline = false;
+                    _dbContext.Users.Update(user);
+                    await _dbContext.SaveChangesAsync();
+                    await _hubContext.Clients.All.SendAsync("UserStatusChanged", user.Id.ToString(), user.Username, false);
+
+                }
+            }
+
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return Ok(new { message = "Logout successful" });
         }
@@ -150,6 +182,26 @@ namespace Nexus.Controllers
 
             return Ok(new { isAuthenticated, username });
         }
+
+        [HttpGet("friends/online")]
+        [Authorize]
+        public IActionResult GetOnlineFriends()
+        {
+
+            var onlineFriends = _dbContext.Users
+                .Where(x => x.IsOnline)
+                .Select(x => new OnlineUserDto
+                {
+                    Id = x.Id,
+                    Username = x.Username,
+                    IsOnline = x.IsOnline
+                })
+                .ToList();
+
+            return Ok(onlineFriends);
+        }
+
+
 
     }
 }
