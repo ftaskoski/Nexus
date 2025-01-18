@@ -4,7 +4,8 @@ CREATE TABLE Users (
     PasswordHash NVARCHAR(255) NOT NULL,
     Salt NVARCHAR(50) NOT NULL, 
     Username NVARCHAR(100) NOT NULL UNIQUE,
-    CreatedAt DATETIME DEFAULT GETDATE()
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    IsOnline BIT DEFAULT 0
 );
  
 

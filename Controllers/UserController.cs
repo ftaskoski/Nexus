@@ -187,15 +187,25 @@ namespace Nexus.Controllers
         [Authorize]
         public IActionResult GetOnlineFriends()
         {
+            var userIdClaim = User?.FindFirst("UserId");
 
-            var onlineFriends = _dbContext.Users
-                .Where(x => x.IsOnline)
-                .Select(x => new OnlineUserDto
-                {
-                    Id = x.Id,
-                    Username = x.Username,
-                    IsOnline = x.IsOnline
-                })
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+            {
+                return Unauthorized(new { message = "Invalid user" });
+            }
+
+            var onlineFriends = _dbContext.Friendships
+                .Where(f => (f.User1Id == userId || f.User2Id == userId) && f.User1Id != f.User2Id)
+                .Join(
+                    _dbContext.Users.Where(u => u.IsOnline),
+                    f => f.User1Id == userId ? f.User2Id : f.User1Id,
+                    u => u.Id,
+                    (f, u) => new OnlineUserDto
+                    {
+                        Id = u.Id,
+                        Username = u.Username,
+                        IsOnline = u.IsOnline
+                    })
                 .ToList();
 
             return Ok(onlineFriends);
