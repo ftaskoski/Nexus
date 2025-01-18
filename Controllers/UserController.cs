@@ -116,7 +116,6 @@ namespace Nexus.Controllers
             }
 
             var user = _dbContext.Users.FirstOrDefault(u => u.Email.ToLower() == loginDto.Email.ToLower());
-            
 
             if (user == null)
             {
@@ -130,13 +129,17 @@ namespace Nexus.Controllers
                 return Unauthorized(new { message = "Invalid email or password" });
             }
 
-           
-                user.IsOnline = true;
-                _dbContext.Users.Update(user);
-                await _dbContext.SaveChangesAsync();
-                await _hubContext.Clients.All.SendAsync("UserStatusChanged", user.Id.ToString(), user.Username, true);
-            
-        
+            user.IsOnline = true;
+            _dbContext.Users.Update(user);
+            await _dbContext.SaveChangesAsync();
+
+            var onlineFriends = await GetOnlineFriendsForUser(user.Id);
+
+            foreach (var friend in onlineFriends)
+            {
+                await _hubContext.Clients.Group(friend.Id.ToString())
+                    .SendAsync("UserStatusChanged", user.Id.ToString(), user.Username, true);
+            }
 
             var claims = new List<Claim>
     {
@@ -165,14 +168,15 @@ namespace Nexus.Controllers
                     user.IsOnline = false;
                     _dbContext.Users.Update(user);
                     await _dbContext.SaveChangesAsync();
-                    await _hubContext.Clients.All.SendAsync("UserStatusChanged", user.Id.ToString(), user.Username, false);
 
+                    await _hubContext.Clients.All.SendAsync("UserStatusChanged", user.Id.ToString(), user.Username, false);
                 }
             }
 
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return Ok(new { message = "Logout successful" });
         }
+
 
         [HttpGet("lookup")]
         public IActionResult Lookup()
@@ -185,7 +189,7 @@ namespace Nexus.Controllers
 
         [HttpGet("friends/online")]
         [Authorize]
-        public IActionResult GetOnlineFriends()
+        public async Task<IActionResult> GetOnlineFriends()
         {
             var userIdClaim = User?.FindFirst("UserId");
 
@@ -194,7 +198,13 @@ namespace Nexus.Controllers
                 return Unauthorized(new { message = "Invalid user" });
             }
 
-            var onlineFriends = _dbContext.Friendships
+            var onlineFriends = await GetOnlineFriendsForUser(userId);
+            return Ok(onlineFriends);
+        }
+
+        private async Task<List<OnlineUserDto>> GetOnlineFriendsForUser(Guid userId)
+        {
+            return await _dbContext.Friendships
                 .Where(f => (f.User1Id == userId || f.User2Id == userId) && f.User1Id != f.User2Id)
                 .Join(
                     _dbContext.Users.Where(u => u.IsOnline),
@@ -206,12 +216,8 @@ namespace Nexus.Controllers
                         Username = u.Username,
                         IsOnline = u.IsOnline
                     })
-                .ToList();
-
-            return Ok(onlineFriends);
+                .ToListAsync();
         }
-
-
 
     }
 }

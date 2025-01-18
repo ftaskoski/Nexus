@@ -100,27 +100,16 @@ const fetchOnlineFriends = async () => {
       url: 'user/friends/online',
       method: 'GET',
     })
-
     const data = response.payload || [];
     onlineFriends.value = data;
  
 };
 
 
-const handleUserStatusChanged = (userId: string, username: string, isOnline: boolean) => {
-  if (isOnline) {
-    const exists = onlineFriends.value.some(friend => friend.id === userId);
-    if (!exists) {
-      onlineFriends.value.push({
-        id: userId,
-        username: username,
-        isOnline: true
-      });
-    }
-  } else {
-    onlineFriends.value = onlineFriends.value.filter(friend => friend.id !== userId);
-  }
-};
+async function handleUserStatusChanged (userId: string, username: string, isOnline: boolean) {
+await fetchOnlineFriends();
+} 
+
 
 
 

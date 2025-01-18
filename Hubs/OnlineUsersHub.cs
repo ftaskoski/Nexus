@@ -4,13 +4,24 @@ namespace Nexus.Hubs
 {
     public class OnlineUsersHub : Hub
     {
-        public async Task SendUserStatusChange(string userId, string username, bool isOnline)
+        public override async Task OnConnectedAsync()
         {
-            await Clients.All.SendAsync("UserStatusChanged", userId, username, isOnline);
+            var userId = Context.User?.FindFirst("UserId")?.Value;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, userId);
+            }
+            await base.OnConnectedAsync();
         }
-        public async Task SendUserStatusChangeOnLogout(string userId, string username)
+
+        public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            await Clients.All.SendAsync("UserStatusChanged", userId, username, false);
+            var userId = Context.User?.FindFirst("UserId")?.Value;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
+            }
+            await base.OnDisconnectedAsync(exception);
         }
     }
 }
