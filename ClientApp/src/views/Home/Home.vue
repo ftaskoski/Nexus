@@ -109,7 +109,7 @@ const fetchOnlineFriends = async () => {
 
 const handleUserStatusChanged = (userId: string, username: string, isOnline: boolean) => {
   if (isOnline) {
-    const exists = onlineFriends.value.some(f => f.id === userId);
+    const exists = onlineFriends.value.some(friend => friend.id === userId);
     if (!exists) {
       onlineFriends.value.push({
         id: userId,
@@ -117,9 +117,11 @@ const handleUserStatusChanged = (userId: string, username: string, isOnline: boo
         isOnline: true
       });
     }
-    
-  } 
+  } else {
+    onlineFriends.value = onlineFriends.value.filter(friend => friend.id !== userId);
+  }
 };
+
 
 
 onMounted(async () => {
