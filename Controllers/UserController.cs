@@ -31,8 +31,7 @@ namespace Nexus.Controllers
             _dbContext = dbContext;
             _passwordService = passwordService;
             _systemUser = systemUser;
-            _hubContext = hubContext; 
-
+            _hubContext = hubContext;
         }
 
         public ActionResult<UserModel> GetUserByUsername(string username)
@@ -94,18 +93,17 @@ namespace Nexus.Controllers
             _dbContext.SaveChanges();
 
             var claims = new List<Claim>
-    {
-        new(ClaimTypes.Name, newUser.Username),
-        new(ClaimTypes.Email, newUser.Email),
-        new("UserId", newUser.Id.ToString())
-    };
+            {
+                new(ClaimTypes.Name, newUser.Username),
+                new(ClaimTypes.Email, newUser.Email),
+                new("UserId", newUser.Id.ToString())
+            };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
 
             return CreatedAtAction(nameof(GetUserByUsername), new { username = newUser.Username }, new { message = "Account created and logged in" });
         }
-
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
@@ -142,11 +140,11 @@ namespace Nexus.Controllers
             }
 
             var claims = new List<Claim>
-    {
-        new(ClaimTypes.Name, user.Username),
-        new(ClaimTypes.Email, user.Email),
-        new("UserId", user.Id.ToString())
-    };
+            {
+                new(ClaimTypes.Name, user.Username),
+                new(ClaimTypes.Email, user.Email),
+                new("UserId", user.Id.ToString())
+            };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
@@ -157,32 +155,30 @@ namespace Nexus.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "UserId");
-
-            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out Guid userId))
+            if (!_systemUser.IsAuthenticated)
             {
-                var user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
+                return Unauthorized(new { message = "User not authenticated" });
+            }
 
-                if (user != null)
-                {
-                    user.IsOnline = false;
-                    _dbContext.Users.Update(user);
-                    await _dbContext.SaveChangesAsync();
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == _systemUser.Id);
+            if (user != null)
+            {
+                user.IsOnline = false;
+                _dbContext.Users.Update(user);
+                await _dbContext.SaveChangesAsync();
 
-                    await _hubContext.Clients.All.SendAsync("UserStatusChanged", user.Id.ToString(), user.Username, false);
-                }
+                await _hubContext.Clients.All.SendAsync("UserStatusChanged", user.Id.ToString(), user.Username, false);
             }
 
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return Ok(new { message = "Logout successful" });
         }
 
-
         [HttpGet("lookup")]
         public IActionResult Lookup()
         {
-            var isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
-            var username = User?.Identity?.Name;
+            var isAuthenticated = _systemUser.IsAuthenticated;
+            var username = _systemUser.Username;
 
             return Ok(new { isAuthenticated, username });
         }
@@ -191,14 +187,7 @@ namespace Nexus.Controllers
         [Authorize]
         public async Task<IActionResult> GetOnlineFriends()
         {
-            var userIdClaim = User?.FindFirst("UserId");
-
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
-            {
-                return Unauthorized(new { message = "Invalid user" });
-            }
-
-            var onlineFriends = await GetOnlineFriendsForUser(userId);
+            var onlineFriends = await GetOnlineFriendsForUser(_systemUser.Id);
             return Ok(onlineFriends);
         }
 
@@ -218,6 +207,5 @@ namespace Nexus.Controllers
                     })
                 .ToListAsync();
         }
-
     }
 }

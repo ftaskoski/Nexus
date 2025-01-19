@@ -27,7 +27,7 @@
                 class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
               >
                 <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Icon icon="user" class="w-6 h-6 text-blue-600" />
+                  <Icon icon="user" class="text-blue-600" />
                 </div>
                 <div class="flex-1">
                   <div class="flex items-center justify-between">
@@ -50,7 +50,7 @@
               >
                 <div class="relative">
                   <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Icon icon="user" class="w-7 h-7 text-blue-600" />
+                    <Icon icon="user" size="28" class="text-blue-600" />
                   </div>
                   <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                 </div>
@@ -106,7 +106,7 @@ const fetchOnlineFriends = async () => {
 };
 
 
-async function handleUserStatusChanged (userId: string, username: string, isOnline: boolean) {
+async function handleUserStatusChanged () {
 await fetchOnlineFriends();
 } 
 

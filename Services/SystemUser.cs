@@ -5,24 +5,19 @@ namespace Nexus.Services
 {
     public class SystemUser : ISystemUser
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        public Guid Id { get; }
+        public string? Username { get; }
+        public string? Email { get; }
+        public bool IsAuthenticated { get; }
 
         public SystemUser(IHttpContextAccessor httpContextAccessor)
         {
-            _httpContextAccessor = httpContextAccessor;
+            var userClaims = httpContextAccessor.HttpContext?.User;
+
+            Id = Guid.TryParse(userClaims?.FindFirst("UserId")?.Value, out var userId) ? userId : Guid.Empty;
+            Username = userClaims?.FindFirst(ClaimTypes.Name)?.Value;
+            Email = userClaims?.FindFirst(ClaimTypes.Email)?.Value;
+            IsAuthenticated = userClaims?.Identity?.IsAuthenticated ?? false;
         }
-
-        public Guid Id => Guid.Parse(
-            _httpContextAccessor.HttpContext?.User?.FindFirst("UserId")?.Value
-            ?? Guid.Empty.ToString());
-
-        public string? Username =>
-            _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Name)?.Value;
-
-        public string? Email =>
-            _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
-
-        public bool IsAuthenticated =>
-            _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
     }
 }

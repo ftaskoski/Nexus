@@ -7,13 +7,7 @@ export const notifications = ref<Notification[]>([]);
 
 
 export const handleNotification = (notification: Notification) => {
-    notifications.value.push({
-      id: notification.id,    
-      message: notification.message,
-      type: notification.type,
-      senderId: notification.senderId,
-      senderName: notification.senderName,
-    });
+    notifications.value.push(notification);
     notificationsCount.value = notifications.value.length;
   
   };

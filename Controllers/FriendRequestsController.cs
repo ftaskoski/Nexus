@@ -91,22 +91,17 @@ namespace Nexus.Controllers
 
             var receiverId = friendRequestDto.ReceiverId.ToString();
 
-            try
-            {
-                await _hubContext.Clients.Group(receiverId)
-                    .SendAsync("ReceiveNotification", new NotificationModel
-                    {
-                        Id = friendRequest.Id,
-                        SenderId = _systemUser.Id,
-                        Message = "You have a new friend request!",
-                        SenderName = _systemUser.Username!,
-                        Type = "FriendRequest"
-                    });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error sending notification: {ex.Message}");
-            }
+            await _hubContext.Clients.Group(receiverId)
+                .SendAsync("ReceiveNotification", new NotificationModel
+                {
+                    Id = friendRequest.Id,
+                    SenderId = _systemUser.Id,
+                    Message = "You have a new friend request!",
+                    SenderName = _systemUser.Username!,
+                    Type = "FriendRequest"
+                });
+
+
 
             return Ok(new { message = "Friend request sent" });
         }
@@ -173,8 +168,8 @@ namespace Nexus.Controllers
                 return BadRequest("Friendship already exists");
             }
 
-  
-      
+
+
 
             var friendship = new FriendshipModel
             {
