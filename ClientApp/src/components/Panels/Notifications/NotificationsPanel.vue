@@ -62,16 +62,14 @@
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted, onUnmounted } from "vue";
-import { HubConnection, HubConnectionState } from "@microsoft/signalr";
+import { onMounted } from "vue";
 import Icon from "@/components/Icon.vue";
 import Button from "@/components/Button.vue";
 import NotificationRow from "@/components/Rows/NotificationRow.vue";
-import { notificationsCount, notifications, handleNotification } from "./store";
+import { notificationsCount, notifications } from "./store";
 import { getNotifications } from "./store";
 import { fetchy } from "@/plugins/axios";
 
-const signalR = inject("signalR2") as HubConnection;
 
 async function declineFriendRequest(id: string) {
   await fetchy({
@@ -99,20 +97,7 @@ onMounted(async () => {
   const res = await getNotifications();
   notifications.value = res.notifications;
   notificationsCount.value = res.count;
-
-  if (!signalR) return;
-
-    signalR.on("ReceiveNotification", handleNotification);
-
-    if (signalR.state === HubConnectionState.Disconnected) {
-      await signalR.start();
-    }
- 
 });
 
-onUnmounted(() => {
-  if (signalR) {
-    signalR.off("ReceiveNotification", handleNotification);
-  }
-});
+
 </script>

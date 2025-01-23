@@ -81,15 +81,10 @@ import { HubConnection, HubConnectionState } from "@microsoft/signalr";
 import { inject } from 'vue';
 import { fetchy } from '@/plugins/axios';
 import type { OnlineFriend } from './types';
-import { notificationsCount, notifications } from '@/components/Panels/Notifications/store';
-import { handleNotification } from '@/components/Panels/Notifications/store';
-import { getNotifications } from '@/components/Panels/Notifications/store';
-
 
 
 const signalRConnection = inject('signalR1') as signalR.HubConnection;
 const signalR = inject("signalR1") as HubConnection;
-const signalR2 = inject("signalR2") as HubConnection;
 
 const searchQuery = ref<string>('');
 const onlineFriends = ref<OnlineFriend[]>([]);
@@ -110,16 +105,7 @@ async function handleUserStatusChanged () {
 await fetchOnlineFriends();
 } 
 
-
-
-
 onMounted(async () => {
-
-  const res = await getNotifications();
-  notifications.value = res.notifications
-  notificationsCount.value = res.count;
-
-  signalR2.on('ReceiveNotification', handleNotification);
 
 
     await fetchOnlineFriends();

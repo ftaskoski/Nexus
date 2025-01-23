@@ -2,17 +2,14 @@
 import { RouterView } from 'vue-router'
 import { isAuthenticated } from '../authStore/store'
 import Nav from './components/Nav.vue'
-import { ref } from 'vue'
-import { onMounted } from 'vue'
+import NotificationsSocket from './components/Panels/Notifications/NotificationsSocket.vue'
 
-let isMounted = ref<boolean>(false)
-
-onMounted(() => isMounted.value = true)
 </script>
 
 <template>
   <div class="relative">
     <Nav v-if="isAuthenticated"/>
+    <NotificationsSocket v-if="isAuthenticated"/>
     <main>
       <RouterView />
     </main>
