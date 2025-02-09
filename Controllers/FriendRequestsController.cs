@@ -6,6 +6,7 @@ using Nexus.DTOS;
 using Nexus.Hubs;
 using Nexus.Interfaces;
 using Nexus.Models;
+using Nexus.Repositories;
 
 namespace Nexus.Controllers
 {
@@ -17,15 +18,18 @@ namespace Nexus.Controllers
         private readonly AppDbContext _dbContext;
         private readonly ISystemUser _systemUser;
         private readonly IHubContext<NotificationsHub> _hubContext;
+        private readonly IUserRepository _userRepository;
 
 
         public FriendRequestsController(AppDbContext dbContext,
             ISystemUser systemUser, 
-            IHubContext<NotificationsHub> hubContext)
+            IHubContext<NotificationsHub> hubContext,
+            IUserRepository userRepository)
         {
             _dbContext = dbContext;
             _systemUser = systemUser;
             _hubContext = hubContext;
+            _userRepository = userRepository;
         }
 
 
@@ -200,6 +204,12 @@ namespace Nexus.Controllers
             }
         }
 
+        [HttpGet("friends/online")]
+        public async Task<IActionResult> GetOnlineFriends()
+        {
+            var onlineFriends = await _userRepository.GetOnlineFriendsForUser(_systemUser.Id);
+            return Ok(onlineFriends);
+        }
 
 
 

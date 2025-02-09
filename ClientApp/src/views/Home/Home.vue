@@ -94,7 +94,7 @@ const onlineFriends = ref<OnlineFriend[]>([]);
 const fetchOnlineFriends = async () => {
  
     const response = await fetchy({
-      url: 'user/friends/online',
+      url: 'friendrequests/friends/online',
       method: 'GET',
     })
     const data = response.payload || [];

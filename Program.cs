@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Nexus.Data;
 using Nexus.Hubs;
 using Nexus.Interfaces;
+using Nexus.Repositories;
 using Nexus.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddSignalR();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ISystemUser, SystemUser>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddSingleton<IPasswordService, PasswordService>();
 
 builder.Services.AddAuthentication(options =>

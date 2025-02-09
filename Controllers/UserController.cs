@@ -21,16 +21,19 @@ namespace Nexus.Controllers
         private readonly IPasswordService _passwordService;
         private readonly ISystemUser _systemUser;
         private readonly IHubContext<OnlineUsersHub> _hubContext;
+        private readonly IUserRepository _userRepository;
 
         public UserController(AppDbContext dbContext,
             IPasswordService passwordService,
             ISystemUser systemUser,
-            IHubContext<OnlineUsersHub> hubContext)
+            IHubContext<OnlineUsersHub> hubContext,
+            IUserRepository userRepository)
         {
             _dbContext = dbContext;
             _passwordService = passwordService;
             _systemUser = systemUser;
             _hubContext = hubContext;
+            _userRepository = userRepository;
         }
 
         public ActionResult<UserModel> GetUserByUsername(string username)
@@ -130,7 +133,7 @@ namespace Nexus.Controllers
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
 
-            var onlineFriends = await GetOnlineFriendsForUser(user.Id);
+            var onlineFriends = await _userRepository.GetOnlineFriendsForUser(user.Id);
 
             foreach (var friend in onlineFriends)
             {
@@ -182,29 +185,6 @@ namespace Nexus.Controllers
             return Ok(new { isAuthenticated, username });
         }
 
-        [HttpGet("friends/online")]
-        [Authorize]
-        public async Task<IActionResult> GetOnlineFriends()
-        {
-            var onlineFriends = await GetOnlineFriendsForUser(_systemUser.Id);
-            return Ok(onlineFriends);
-        }
 
-        private async Task<List<OnlineUserDto>> GetOnlineFriendsForUser(Guid userId)
-        {
-            return await _dbContext.Friendships
-                .Where(f => (f.User1Id == userId || f.User2Id == userId) && f.User1Id != f.User2Id)
-                .Join(
-                    _dbContext.Users.Where(u => u.IsOnline),
-                    f => f.User1Id == userId ? f.User2Id : f.User1Id,
-                    u => u.Id,
-                    (f, u) => new OnlineUserDto
-                    {
-                        Id = u.Id,
-                        Username = u.Username,
-                        IsOnline = u.IsOnline
-                    })
-                .ToListAsync();
-        }
     }
 }
