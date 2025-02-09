@@ -84,6 +84,8 @@ import type { OnlineFriend } from './types';
 
 
 const signalRConnection = inject('signalR1') as signalR.HubConnection;
+const signalRConnection2 = inject('signalR2') as signalR.HubConnection;
+
 const signalR = inject("signalR1") as HubConnection;
 
 const searchQuery = ref<string>('');
@@ -101,9 +103,11 @@ const fetchOnlineFriends = async () => {
 };
 
 
+
 async function handleUserStatusChanged () {
-await fetchOnlineFriends();
+  await fetchOnlineFriends();
 } 
+signalRConnection2.on("FriendRequestAccepted", handleUserStatusChanged);
 
 onMounted(async () => {
 

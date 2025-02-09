@@ -143,7 +143,7 @@ namespace Nexus.Controllers
         }
 
         [HttpPost("accept/{id}")]
-        public IActionResult AcceptFriendRequest(string id)
+        public async Task<IActionResult> AcceptFriendRequest(string id)
         {
             var requestId = new Guid(id);
             var friendRequest = _dbContext.FriendRequests
@@ -168,9 +168,6 @@ namespace Nexus.Controllers
                 return BadRequest("Friendship already exists");
             }
 
-
-
-
             var friendship = new FriendshipModel
             {
                 Id = Guid.NewGuid(),
@@ -183,7 +180,12 @@ namespace Nexus.Controllers
             {
                 _dbContext.FriendRequests.Remove(friendRequest);
                 _dbContext.Friendships.Add(friendship);
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
+
+                var senderId = friendRequest.SenderId.ToString();
+
+                await _hubContext.Clients.Group(senderId)
+                    .SendAsync("FriendRequestAccepted");
 
                 return Ok(new { message = "Friend request accepted" });
             }
