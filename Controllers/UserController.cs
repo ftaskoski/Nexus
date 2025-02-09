@@ -1,16 +1,15 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Mvc;
-using Nexus.Data;
-using Nexus.Models;
-using Nexus.Services;
-using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Nexus.DTOS;
-using Nexus.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Nexus.Data;
+using Nexus.DTOS;
 using Nexus.Hubs;
+using Nexus.Interfaces;
+using Nexus.Models;
+using System.Security.Claims;
 
 namespace Nexus.Controllers
 {

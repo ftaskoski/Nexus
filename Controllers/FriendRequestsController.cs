@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Nexus.Data;
 using Nexus.DTOS;
@@ -8,6 +9,7 @@ using Nexus.Models;
 
 namespace Nexus.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class FriendRequestsController : ControllerBase
@@ -17,7 +19,9 @@ namespace Nexus.Controllers
         private readonly IHubContext<NotificationsHub> _hubContext;
 
 
-        public FriendRequestsController(AppDbContext dbContext, ISystemUser systemUser, IHubContext<NotificationsHub> hubContext)
+        public FriendRequestsController(AppDbContext dbContext,
+            ISystemUser systemUser, 
+            IHubContext<NotificationsHub> hubContext)
         {
             _dbContext = dbContext;
             _systemUser = systemUser;
