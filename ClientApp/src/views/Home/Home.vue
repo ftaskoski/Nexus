@@ -79,9 +79,8 @@ import Input from '@/components/Input.vue';
 import { ref, onMounted, onUnmounted } from 'vue';
 import { HubConnection, HubConnectionState } from "@microsoft/signalr";
 import { inject } from 'vue';
-import { fetchy } from '@/plugins/axios';
 import type { OnlineFriend } from './types';
-
+import { getFriendsData } from './store';
 
 const signalRConnection = inject('signalR1') as signalR.HubConnection;
 const signalRConnection2 = inject('signalR2') as signalR.HubConnection;
@@ -91,12 +90,12 @@ const signalR = inject("signalR1") as HubConnection;
 const searchQuery = ref<string>('');
 const onlineFriends = ref<OnlineFriend[]>([]);
 
+
+
+
 const fetchOnlineFriends = async () => {
  
-    const response = await fetchy({
-      url: 'friendrequests/friends/online',
-      method: 'GET',
-    })
+    const response = await getFriendsData();
     const data = response.payload || [];
     onlineFriends.value = data;
  
