@@ -17,6 +17,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ISystemUser, SystemUser>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddSingleton<IPasswordService, PasswordService>();
+builder.Services.AddScoped<IFriendsRepository, FriendsRepository>();
 
 builder.Services.AddAuthentication(options =>
 {
