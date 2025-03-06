@@ -36,7 +36,7 @@
 <script setup lang="ts">
 import Icon from "@/components/Icon.vue";
 import {  HubConnectionState } from "@microsoft/signalr";
-import { fetchy } from "@/plugins/axios";
+import { getChatId } from "./store";
 import { onMounted, ref, inject } from "vue";
 import { useRouter } from 'vue-router'
 
@@ -65,11 +65,8 @@ onMounted(async () => {
     }
 });
 
-async function toChat(friendId: string) {
-  const res = await fetchy({
-    url: `chat/start/${friendId}`,
-    method: "GET",
-  })
+async function toChat(id: string) {
+  const res = await getChatId(id);
   router.push(`/chat/${res.payload.chatRoomId}`)
 }
 

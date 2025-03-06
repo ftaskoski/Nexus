@@ -7,4 +7,11 @@ export async function getFriendsData() {
   
     return res;
   }
-  
+ 
+export async function getChatId(friendId: string) {
+  const res = await fetchy({
+    url: `chat/start/${friendId}`,
+    method: "GET",
+  })
+  return res;
+}  
