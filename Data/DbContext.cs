@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Nexus.Models;
-using System.Collections.Generic;
 
 namespace Nexus.Data
 {
@@ -15,6 +14,7 @@ namespace Nexus.Data
         public DbSet<FriendRequestModel> FriendRequests { get; set; } = null!;
         public DbSet<FriendshipModel> Friendships { get; set; } = null !;
         public DbSet<FriendModel> Friends { get; set; } = null !;
+        public DbSet<ChatRoomModel> ChatRooms { get; set; } = null!;
 
     }
 }

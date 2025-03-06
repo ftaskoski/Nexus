@@ -8,6 +8,7 @@
         v-for="friend in friends"
         :key="friend.id"
         class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+        @click="toChat(friend.id)"
       >
         <div class="relative">
           <div
@@ -35,13 +36,15 @@
 <script setup lang="ts">
 import Icon from "@/components/Icon.vue";
 import {  HubConnectionState } from "@microsoft/signalr";
-
+import { fetchy } from "@/plugins/axios";
 import { onMounted, ref, inject } from "vue";
+import { useRouter } from 'vue-router'
 
 import type { Friend } from "./types";
 import { getFriendsData } from "./store";
 
 let friends = ref<Friend[]>([]);
+const router  = useRouter()
 
 const signalR= inject('signalR1') as signalR.HubConnection;
 
@@ -61,6 +64,14 @@ onMounted(async () => {
       await signalR.start();
     }
 });
+
+async function toChat(friendId: string) {
+  const res = await fetchy({
+    url: `chat/start/${friendId}`,
+    method: "GET",
+  })
+  router.push(`/chat/${res.payload.chatRoomId}`)
+}
 
 
 </script>

@@ -5,6 +5,7 @@ import { homeRoutes } from '@/views/Home/routes'
 import { isAuthenticated, Status } from '../../authStore/store'
 import { panelRoutes } from '@/components/Panels/routes'
 import { exploreRoutes } from '@/views/Explore/routes'
+import { chatRoutes } from '@/views/Chat/routes'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,6 +15,7 @@ const router = createRouter({
     homeRoutes,
     exploreRoutes,
     panelRoutes,
+    chatRoutes
   
   ],
 })
