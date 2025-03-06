@@ -23,3 +23,24 @@ import NotificationsSocket from './components/Panels/Notifications/Notifications
     />
   </div>
 </template>
+
+
+<style>
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #aaa;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+</style>

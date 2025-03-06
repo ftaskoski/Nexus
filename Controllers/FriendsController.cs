@@ -24,5 +24,12 @@ namespace Nexus.Controllers
 
         }
 
+        [HttpGet("{id}")]
+        public async Task<FriendModel?> GetFriend(Guid id)
+        {
+            return await _friendsRepository.GetFriend(id);
+        }
+
+
     }
 }

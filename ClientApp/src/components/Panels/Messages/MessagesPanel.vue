@@ -68,6 +68,7 @@ onMounted(async () => {
 async function toChat(id: string) {
   const res = await getChatId(id);
   router.push(`/chat/${res.payload.chatRoomId}`)
+  localStorage.setItem('friendId',id)
 }
 
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Nexus.Data;
 using Nexus.Interfaces;
 using Nexus.Models;
@@ -30,5 +31,21 @@ namespace Nexus.Repositories
                     })
                 .ToListAsync();
         }
+
+        public async Task<FriendModel?> GetFriend(Guid id)
+        {
+            var friend = await _dbContext.Users
+                .Where(u => u.Id == id)
+                .Select(u => new FriendModel
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    IsOnline = u.IsOnline,
+                })
+                .FirstOrDefaultAsync();
+
+            return friend;
+        }
+
     }
 }
