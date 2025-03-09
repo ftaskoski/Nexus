@@ -42,15 +42,7 @@
               </div>
             </div>
             
-            <div class="flex mr-auto mb-4">
-              <div class="bg-gray-100 p-3 rounded-lg">
-                <div class="flex space-x-2">
-                  <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
-                  <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
-                  <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
-                </div>
-              </div>
-            </div>
+            <ChatLoading />
           </div>
         </template>
   
@@ -85,6 +77,7 @@
   import Icon from '@/components/Icon.vue';
   import Input from '@/components/Input.vue';
   import Button from '@/components/Button.vue';
+  import ChatLoading from '@/components/ChatLoading.vue';
 
   import { onMounted,ref } from 'vue';
   import { getFriend } from './store';

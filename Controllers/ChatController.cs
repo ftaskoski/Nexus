@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Nexus.Data;
 using Nexus.Interfaces;
 using Nexus.Models;
+using Nexus.Services;
 
 namespace Nexus.Controllers
 {
@@ -14,12 +15,14 @@ namespace Nexus.Controllers
     {
         private readonly AppDbContext _dbContext;
         private readonly ISystemUser _systemUser;
+        private readonly HuggingFaceService _chatService;
 
 
-        public ChatController(AppDbContext context, ISystemUser systemUser)
+        public ChatController(AppDbContext context, ISystemUser systemUser,HuggingFaceService  chat)
         {
             _dbContext = context;
             _systemUser = systemUser;
+            _chatService = chat;
         }
 
         [HttpGet("start/{friendId}")]
@@ -61,5 +64,18 @@ namespace Nexus.Controllers
             var sortedIds = new[] { userId1, userId2 }.OrderBy(id => id).ToArray();
             return $"chat_{sortedIds[0]}_{sortedIds[1]}";
         }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Chat([FromBody] AiRequestModel request)
+        {
+            var reply = await _chatService.GetAiResponse(request.Message);
+            return Ok(new { reply });
+        }
     }
+
+
+
 }
+
+
