@@ -23,7 +23,7 @@
 
           <div v-if="chatResponse && !isLoading" class="mb-4">
             <div class="mr-auto max-w-xs md:max-w-md p-3 bg-gray-100 text-gray-800 rounded-lg rounded-bl-none">
-              <p>{{ chatResponse }}</p>
+              <div v-html="formatResponse(chatResponse)"></div>
               <div class="text-xs mt-1 text-gray-500">{{ new Date().toLocaleTimeString() }}</div>
             </div>
           </div>
@@ -47,6 +47,7 @@
                 type="primary"
                 size="m"
                 @click="sendMessage"
+                :disabled="isLoading || !userInput.trim()"
               >
                 <Icon icon="send" class="text-white" />
               </Button>
@@ -59,22 +60,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, nextTick } from "vue";
 import Card from '@/components/Card.vue';
 import Icon from '@/components/Icon.vue';
 import Input from '@/components/Input.vue';
 import Button from '@/components/Button.vue';
 import { fetchy } from "@/plugins/axios";
 import ChatLoading from "@/components/ChatLoading.vue";
+import hljs from "highlight.js"; 
+import "highlight.js/styles/github.css"; 
 
 const userInput = ref<string>("");
 const chatResponse = ref<string>("");
 const sentMessage = ref<string>("");
 const isLoading = ref<boolean>(false);
 
-
 async function sendMessage() {
-  if (!userInput.value.trim()) return;
+  if (!userInput.value.trim() || isLoading.value) return;
 
   isLoading.value = true;
   sentMessage.value = userInput.value;
@@ -97,5 +99,30 @@ async function sendMessage() {
   isLoading.value = false;
   userInput.value = "";
 
+  await nextTick();
+  highlightCode();
 }
+function formatResponse(response: string) {
+  return response.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+}
+function highlightCode() {
+  document.querySelectorAll("pre code").forEach((block) => {
+    hljs.highlightBlock(block as HTMLElement);
+  });
+}
+
+
 </script>
+<style scoped>
+pre {
+  background-color: #f6f8fa;
+  padding: 12px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+code {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+}
+</style>
