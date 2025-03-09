@@ -103,7 +103,15 @@ async function sendMessage() {
   highlightCode();
 }
 function formatResponse(response: string) {
-  return response.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+  return response.replace(/```([\s\S]*?)```/g, (_, code) => {
+    const escapedCode = code
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+    return `<pre><code>${escapedCode}</code></pre>`;
+  });
 }
 function highlightCode() {
   document.querySelectorAll("pre code").forEach((block) => {
