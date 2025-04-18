@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Nexus.Data;
 using Nexus.DTOS;
 using Nexus.Hubs;
@@ -47,7 +45,7 @@ namespace Nexus.Controllers
         }
 
         [HttpDelete("{username}")]
-        public IActionResult DeleteUserByUsername(string username)
+        public async Task<IActionResult> DeleteUserByUsername(string username)
         {
             var user = _dbContext.Users.FirstOrDefault(u => u.Username == username);
 
@@ -56,8 +54,7 @@ namespace Nexus.Controllers
                 return NotFound(new { message = "User not found" });
             }
 
-            _dbContext.Users.Remove(user);
-            _dbContext.SaveChanges();
+            await _userRepository.DeleteAsync(user.Id);
 
             return Ok(new { message = "User deleted successfully" });
         }
@@ -91,8 +88,7 @@ namespace Nexus.Controllers
                 CreatedAt = DateTime.Now
             };
 
-            _dbContext.Users.Add(newUser);
-            _dbContext.SaveChanges();
+           await _userRepository.AddAsync(newUser);
 
             var claims = new List<Claim>
             {
@@ -130,8 +126,7 @@ namespace Nexus.Controllers
             }
 
             user.IsOnline = true;
-            _dbContext.Users.Update(user);
-            await _dbContext.SaveChangesAsync();
+            await _userRepository.UpdateAsync(user);
 
             var onlineFriends = await _userRepository.GetOnlineFriendsForUser(user.Id);
 
@@ -162,12 +157,11 @@ namespace Nexus.Controllers
                 return Unauthorized(new { message = "User not authenticated" });
             }
 
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == _systemUser.Id);
+            var user = await _userRepository.GetByIdAsync(_systemUser.Id);
             if (user != null)
             {
                 user.IsOnline = false;
-                _dbContext.Users.Update(user);
-                await _dbContext.SaveChangesAsync();
+                await _userRepository.UpdateAsync(user);
 
                 await _hubContext.Clients.All.SendAsync("UserStatusChanged", user.Id.ToString(), user.Username, false);
             }
@@ -185,6 +179,30 @@ namespace Nexus.Controllers
             return Ok(new { isAuthenticated, username });
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUserById(Guid id)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            return Ok(user);
+        }
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var users = await _userRepository.GetAllAsync();
+            if (users == null || !users.Any())
+            {
+                return NotFound(new { message = "No users found" });
+            }
+            var onlineUsers = users.Where(u => u.IsOnline).ToList();
+            return Ok(users);
+        }
 
     }
 }

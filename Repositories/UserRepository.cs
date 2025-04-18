@@ -1,18 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Nexus.Data;
 using Nexus.DTOS;
 using Nexus.Interfaces;
+using Nexus.Models; 
 
 namespace Nexus.Repositories
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository : Repository<UserModel>, IUserRepository
     {
         private readonly AppDbContext _dbContext;
 
-        public UserRepository(AppDbContext dbContext)
+        public UserRepository(AppDbContext dbContext) : base(dbContext)
         {
-            _dbContext = dbContext;
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         public async Task<List<OnlineUserDto>> GetOnlineFriendsForUser(Guid userId)
@@ -31,6 +31,5 @@ namespace Nexus.Repositories
                     })
                 .ToListAsync();
         }
-
     }
 }
