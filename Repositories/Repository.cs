@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Nexus.Data;
+using Nexus.Interfaces;
 
 namespace Nexus.Repositories
 {

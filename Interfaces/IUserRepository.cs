@@ -1,6 +1,5 @@
 ﻿using Nexus.DTOS;
 using Nexus.Models;
-using Nexus.Repositories;
 
 namespace Nexus.Interfaces
 {

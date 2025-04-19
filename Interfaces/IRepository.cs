@@ -1,4 +1,4 @@
-﻿namespace Nexus.Repositories
+﻿namespace Nexus.Interfaces
 {
     public interface IRepository<T> where T : class
     {

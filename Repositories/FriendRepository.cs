@@ -6,11 +6,11 @@ using Nexus.Models;
 
 namespace Nexus.Repositories
 {
-    public class FriendsRepository : IFriendsRepository
+    public class FriendsRepository : Repository<FriendModel>,IFriendsRepository
     {
         private readonly AppDbContext _dbContext;
 
-        public FriendsRepository(AppDbContext dbContext)
+        public FriendsRepository(AppDbContext dbContext) : base(dbContext)
         {
             _dbContext = dbContext;
         }
@@ -34,17 +34,14 @@ namespace Nexus.Repositories
 
         public async Task<FriendModel?> GetFriend(Guid id)
         {
-            var friend = await _dbContext.Users
-                .Where(u => u.Id == id)
-                .Select(u => new FriendModel
-                {
-                    Id = u.Id,
-                    Username = u.Username,
-                    IsOnline = u.IsOnline,
-                })
-                .FirstOrDefaultAsync();
+            var user = await GetByIdAsync(id);
 
-            return friend;
+            return user != null ? new FriendModel
+            {
+                Id = user.Id,
+                Username = user.Username,
+                IsOnline = user.IsOnline,
+            } : null;
         }
 
     }
