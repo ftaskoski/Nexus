@@ -71,43 +71,54 @@
     </div>
   </template>
   
-  <script setup lang="ts">
-  import ChatLoading from '@/components/ChatLoading.vue';
-  import Button from '@/components/Button.vue';
-  import Input from '@/components/Input.vue';
-  import Card from '@/components/Card.vue';
-  import Icon from '@/components/Icon.vue';
+<script setup lang="ts">
+import ChatLoading from '@/components/ChatLoading.vue';
+import Button from '@/components/Button.vue';
+import Input from '@/components/Input.vue';
+import Card from '@/components/Card.vue';
+import Icon from '@/components/Icon.vue';
 
-  import type { Friend } from '@/components/Panels/Messages/types';
-  import { getFriend, sendMessage, getMessages } from './store';
-  import { useRouter, useRoute } from 'vue-router';
-  import { onMounted, ref, nextTick } from 'vue';
-  import type { Message } from './types';
+import { HubConnection, HubConnectionState } from "@microsoft/signalr";
 
-  const friendId = localStorage.getItem('friendId')
-  const friend = ref<Friend | null>(null)
-  const router = useRouter()
-  const route = useRoute()
-  const chatRoomId = route.params.id as string
-  
-  
+import type { Friend } from '@/components/Panels/Messages/types';
+import { getFriend, sendMessage, getMessages } from './store';
+import { useRouter, useRoute } from 'vue-router';
+import { onMounted, ref, nextTick, onUnmounted, inject } from 'vue';
+import type { Message } from './types';
+
+const friendId = localStorage.getItem('friendId')
+const friend = ref<Friend | null>(null)
+const router = useRouter()
+const route = useRoute()
+const chatRoomId = route.params.id as string
+const signalRConnection = inject('messageSignalR') as signalR.HubConnection;
+
 let message = ref<string>('')
 let messages = ref<Message[]>([])
 let skip = ref<number>(0)
 let loading = ref<boolean>(false)
 const take = 5
 
-  async function sendMsg() {
-      const res = await sendMessage(friendId, message.value, chatRoomId)
-      message.value = ''
-  }
+async function sendMsg() {
+  const res = await sendMessage(friendId, message.value, chatRoomId);
+  message.value = '';
+}
 
-  async function getMsgs() {
-    const res = await getMessages(chatRoomId, skip.value, take)
-    return res;
+signalRConnection.on("ReceiveMessage", (newMessage) => {
+  
+  if (!messages.value.some(m => m.id === newMessage.id)) {
+    messages.value.push(newMessage);
+    nextTick(() => {
+      scrollContainer.value?.scrollTo(0, scrollContainer.value.scrollHeight);
+    });
   }
+});
+async function getMsgs() {
+  const res = await getMessages(chatRoomId, skip.value, take)
+  return res;
+}
 
-  async function getData() {
+async function getData() {
   const [friendRes, messagesRes] = await Promise.all([
     getFriend(friendId),
     getMsgs()
@@ -116,13 +127,7 @@ const take = 5
   messages.value = messagesRes.payload.reverse();
 }
 
-
-  onMounted(async() => {
-    await getData()
-    scrollContainer.value?.scrollTo(0, scrollContainer.value.scrollHeight);
-  });
-
-  const scrollContainer = ref<HTMLElement | null>(null)
+const scrollContainer = ref<HTMLElement | null>(null)
 
 async function handleScroll() {
   if (!scrollContainer.value) return;
@@ -140,5 +145,53 @@ async function handleScroll() {
   }
 }
 
+async function ensureConnection() {
+  if (signalRConnection.state === HubConnectionState.Disconnected) {
+    
+      await signalRConnection.start();
+      
+      await signalRConnection.invoke("JoinChatRoom", chatRoomId);
+      
+      return true;
+ 
+  }
+  
+  if (signalRConnection.state === HubConnectionState.Connected) {
+   
+      await signalRConnection.invoke("JoinChatRoom", chatRoomId);
+      
+      return true;
+   
+  }
+  
+}
 
-  </script>
+onMounted(async() => {
+  await getData();
+  scrollContainer.value?.scrollTo(0, scrollContainer.value.scrollHeight);
+
+  signalRConnection.on("ReceiveMessage", (newMessage) => {
+    if (!messages.value.some(m => m.id === newMessage.id)) {
+      messages.value.push(newMessage);
+      nextTick(() => {
+        scrollContainer.value?.scrollTo(0, scrollContainer.value.scrollHeight);
+      });
+    }
+  });
+
+  signalRConnection.onclose((error) => {
+    console.error('SignalR connection closed:', error);
+  });
+  
+  await ensureConnection();
+});
+
+onUnmounted(() => {
+  signalRConnection.off("ReceiveMessage");
+  
+  if (signalRConnection.state === HubConnectionState.Connected) {
+    signalRConnection.invoke("LeaveChatRoom", chatRoomId)
+      .catch(err => console.error("Error leaving chat room:", err));
+  }
+});
+</script>
