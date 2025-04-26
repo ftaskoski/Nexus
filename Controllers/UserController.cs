@@ -85,10 +85,13 @@ namespace Nexus.Controllers
                 Username = userDto.Username,
                 PasswordHash = hashedPassword,
                 Salt = salt,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                IsOnline = true
             };
 
-           await _userRepository.AddAsync(newUser);
+            await _userRepository.AddAsync(newUser);
+
+            await _hubContext.Clients.All.SendAsync("UserRegistered", newUser.Id.ToString(), newUser.Username);
 
             var claims = new List<Claim>
             {
