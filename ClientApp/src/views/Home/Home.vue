@@ -45,8 +45,8 @@
           <div class="mt-6">
             <h2 class="text-sm font-medium text-gray-500 mb-3">Online Friends</h2>
             <div class="flex gap-4 overflow-x-auto pb-2">
-              <div v-for="friend in onlineFriends" :key="friend.id" 
-                class="flex flex-col items-center space-y-1 min-w-[60px]"
+              <div v-for="friend in onlineFriends" :key="friend.id" @click="toChat(friend.id)" 
+                class="flex flex-col items-center space-y-1 min-w-[60px] cursor-pointer"
               >
                 <div class="relative">
                   <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -81,10 +81,12 @@ import { HubConnection, HubConnectionState } from "@microsoft/signalr";
 import { inject } from 'vue';
 import type { OnlineFriend } from './types';
 import { getFriendsData } from './store';
+import { getChatId } from '@/components/Panels/Messages/store';
+import { useRouter } from 'vue-router';
 
 const signalRConnection = inject('signalR1') as signalR.HubConnection;
 const signalRConnection2 = inject('signalR2') as signalR.HubConnection;
-
+const router = useRouter();
 const signalR = inject("signalR1") as HubConnection;
 
 const searchQuery = ref<string>('');
@@ -101,7 +103,11 @@ const fetchOnlineFriends = async () => {
  
 };
 
-
+async function toChat(id: string) {
+  const res = await getChatId(id);
+  router.push(`/chat/${res.payload.chatRoomId}`)
+  localStorage.setItem('friendId',id)
+}
 
 async function handleUserStatusChanged () {
   await fetchOnlineFriends();

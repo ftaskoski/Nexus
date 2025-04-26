@@ -19,9 +19,9 @@ export async function sendMessage(receiverId: string | null, content: string, ch
   })
 }
 
-export async function getMessages(chatRoomId: string | null) {
+export async function getMessages(chatRoomId: string | null, skip: number, take: number) {
   const res = await fetchy({
-    url: `/chat/messages/${chatRoomId}`,
+    url: `/chat/messages/${chatRoomId}?skip=${skip}&take=${take}`,
     method: "GET",
   });
   return res;

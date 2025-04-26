@@ -13,7 +13,18 @@
         </template>
   
         <template #content>
-          <div class="flex flex-col h-96 overflow-y-auto p-4">
+          <div ref="scrollContainer" class="flex flex-col h-96 overflow-y-auto p-4" @scroll="handleScroll">
+            <div v-if="loading" class="flex justify-center items-center h-10">
+            <Icon
+            v-if="loading"
+            icon="loading"
+            size="20px"
+            class="animate-spin text-black mb-4"
+            fill="currentColor"
+            color="none"
+          >
+          </Icon>            
+        </div>
             <div v-for="msg in messages" :key="msg.id" class="mb-4">
               <div
                 :class="[
@@ -61,16 +72,16 @@
   </template>
   
   <script setup lang="ts">
+  import ChatLoading from '@/components/ChatLoading.vue';
+  import Button from '@/components/Button.vue';
+  import Input from '@/components/Input.vue';
   import Card from '@/components/Card.vue';
   import Icon from '@/components/Icon.vue';
-  import Input from '@/components/Input.vue';
-  import Button from '@/components/Button.vue';
-  import ChatLoading from '@/components/ChatLoading.vue';
 
-  import { onMounted,ref } from 'vue';
+  import type { Friend } from '@/components/Panels/Messages/types';
   import { getFriend, sendMessage, getMessages } from './store';
   import { useRouter, useRoute } from 'vue-router';
-  import type { Friend } from '@/components/Panels/Messages/types';
+  import { onMounted, ref, nextTick } from 'vue';
   import type { Message } from './types';
 
   const friendId = localStorage.getItem('friendId')
@@ -80,15 +91,19 @@
   const chatRoomId = route.params.id as string
   
   
-  let message = ref<string>('')
-  let messages = ref<Message[]>([])
+let message = ref<string>('')
+let messages = ref<Message[]>([])
+let skip = ref<number>(0)
+let loading = ref<boolean>(false)
+const take = 5
+
   async function sendMsg() {
       const res = await sendMessage(friendId, message.value, chatRoomId)
       message.value = ''
   }
 
   async function getMsgs() {
-    const res = await getMessages(chatRoomId)
+    const res = await getMessages(chatRoomId, skip.value, take)
     return res;
   }
 
@@ -98,13 +113,32 @@
     getMsgs()
   ]);
   friend.value = friendRes.payload;
-  messages.value = messagesRes.payload;
+  messages.value = messagesRes.payload.reverse();
 }
 
 
   onMounted(async() => {
     await getData()
+    scrollContainer.value?.scrollTo(0, scrollContainer.value.scrollHeight);
   });
+
+  const scrollContainer = ref<HTMLElement | null>(null)
+
+async function handleScroll() {
+  if (!scrollContainer.value) return;
+
+  if (scrollContainer.value.scrollTop === 0 && !loading.value) {
+    loading.value = true;
+    skip.value += take;
+    const res = await getMsgs();
+    if (res && res.payload.length > 0) {
+      messages.value = [...res.payload.reverse(), ...messages.value];
+    }
+    loading.value = false;
+    await nextTick();
+    scrollContainer.value.scrollTop = 10;
+  }
+}
 
 
   </script>

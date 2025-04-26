@@ -94,18 +94,19 @@ namespace Nexus.Controllers
         }
 
         [HttpGet("messages/{chatRoomId}")]
-        public async Task<IActionResult> GetMessages(string chatRoomId)
+        public async Task<IActionResult> GetMessages(string chatRoomId, int skip = 0, int take = 5)
         {
             var messages = await _dbContext.Messages
                 .Where(m => m.ChatRoomId == chatRoomId)
-                .OrderBy(m => m.SentAt)
+                .OrderByDescending(m => m.SentAt) 
+                .Skip(skip)
+                .Take(take)
                 .ToListAsync();
-            if (messages == null || messages.Count == 0)
-            {
-                return NotFound("No messages found.");
-            }
+
             return Ok(messages);
         }
+
+
 
 
     }
