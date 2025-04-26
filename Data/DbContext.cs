@@ -15,6 +15,7 @@ namespace Nexus.Data
         public DbSet<FriendshipModel> Friendships { get; set; } = null !;
         public DbSet<FriendModel> Friends { get; set; } = null !;
         public DbSet<ChatRoomModel> ChatRooms { get; set; } = null!;
+        public DbSet<MessageModel> Messages { get; set; } = null!;
 
     }
 }

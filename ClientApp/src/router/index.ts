@@ -4,7 +4,6 @@ import { registerRoutes } from '@/views/Register/routes'
 import { homeRoutes } from '@/views/Home/routes'
 import { isAuthenticated, Status } from '../../authStore/store'
 import { panelRoutes } from '@/components/Panels/routes'
-import { exploreRoutes } from '@/views/Explore/routes'
 import { chatRoutes } from '@/views/Chat/routes'
 import { aiRoutes } from '@/views/HuggingFace/routes'
 
@@ -14,7 +13,6 @@ const router = createRouter({
     loginRoutes,
     registerRoutes,
     homeRoutes,
-    exploreRoutes,
     panelRoutes,
     chatRoutes,
     aiRoutes

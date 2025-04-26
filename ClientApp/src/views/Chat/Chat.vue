@@ -14,50 +14,38 @@
   
         <template #content>
           <div class="flex flex-col h-96 overflow-y-auto p-4">
-            <div class="mb-4">
-              <div class="mr-auto max-w-xs md:max-w-md p-3 bg-gray-100 text-gray-800 rounded-lg rounded-bl-none">
-                <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Excepturi quod repellat est, animi impedit officiis natus molestias iste placeat reiciendis quam, maiores ipsam provident itaque alias, perferendis enim labore inventore.</p>
-                <div class="text-xs mt-1 text-gray-500">10:25 AM</div>
+            <div v-for="msg in messages" :key="msg.id" class="mb-4">
+              <div
+                :class="[
+                  msg.receiverId === friendId ? 'ml-auto bg-blue-500 text-white rounded-br-none' : 'mr-auto bg-gray-100 text-gray-800 rounded-bl-none',
+                  'max-w-xs md:max-w-md p-3 rounded-lg'
+                ]"
+              >
+                <p>{{ msg.content }}</p>
+                <div :class="['text-xs mt-1', msg.receiverId === friendId ? 'text-blue-100' : 'text-gray-500']">
+                  <span>{{ new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
+                </div>
               </div>
             </div>
-            
-            <div class="mb-4">
-              <div class="ml-auto max-w-xs md:max-w-md p-3 bg-blue-500 text-white rounded-lg rounded-br-none">
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem earum cumque odit reprehenderit omnis? Voluptatum similique sequi ipsa asperiores, itaque nisi sit rem doloremque quia qui, eius harum, distinctio corporis!</p>
-                <div class="text-xs mt-1 text-blue-100">10:26 AM</div>
-              </div>
-            </div>
-            
-            <div class="mb-4">
-              <div class="mr-auto max-w-xs md:max-w-md p-3 bg-gray-100 text-gray-800 rounded-lg rounded-bl-none">
-                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Mollitia fugit dolores soluta id alias aspernatur dolorem, consequatur minus earum consectetur suscipit sed sit ipsa laudantium? Tenetur saepe consequuntur repudiandae natus.</p>
-                <div class="text-xs mt-1 text-gray-500">10:28 AM</div>
-              </div>
-            </div>
-            
-            <div class="mb-4">
-              <div class="ml-auto max-w-xs md:max-w-md p-3 bg-blue-500 text-white rounded-lg rounded-br-none">
-                <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nisi reiciendis ratione ut sint. Voluptate minus iusto quibusdam. Quisquam, asperiores harum magni ducimus laborum molestias dolore, possimus incidunt nihil itaque fugit.</p>
-                <div class="text-xs mt-1 text-blue-100">10:30 AM</div>
-              </div>
-            </div>
-            
-            <ChatLoading />
+
+            <!-- <ChatLoading /> -->
           </div>
         </template>
+
   
         <template #footer>
             <div class="border-t p-4 ">
                 <div class="flex items-center gap-2">
                     <Input
                         id="chat-input"
-                        modelValue=""
+                        v-model="message"
                         placeholder="Type a message..."
                         class="flex-1"
-                        @update:modelValue="(value) => {}"
+                        @keyup.enter="sendMsg"
                     />
                     <div class="flex justify-end">
                         <Button 
+                        @click="sendMsg"
                         type="primary"
                         size="m"
                         >
@@ -80,15 +68,42 @@
   import ChatLoading from '@/components/ChatLoading.vue';
 
   import { onMounted,ref } from 'vue';
-  import { getFriend } from './store';
+  import { getFriend, sendMessage, getMessages } from './store';
+  import { useRouter, useRoute } from 'vue-router';
   import type { Friend } from '@/components/Panels/Messages/types';
+  import type { Message } from './types';
 
   const friendId = localStorage.getItem('friendId')
   const friend = ref<Friend | null>(null)
+  const router = useRouter()
+  const route = useRoute()
+  const chatRoomId = route.params.id as string
+  
+  
+  let message = ref<string>('')
+  let messages = ref<Message[]>([])
+  async function sendMsg() {
+      const res = await sendMessage(friendId, message.value, chatRoomId)
+      message.value = ''
+  }
+
+  async function getMsgs() {
+    const res = await getMessages(chatRoomId)
+    return res;
+  }
+
+  async function getData() {
+  const [friendRes, messagesRes] = await Promise.all([
+    getFriend(friendId),
+    getMsgs()
+  ]);
+  friend.value = friendRes.payload;
+  messages.value = messagesRes.payload;
+}
+
 
   onMounted(async() => {
-    const res = await getFriend(friendId)
-    friend.value = res.payload
+    await getData()
   });
 
 

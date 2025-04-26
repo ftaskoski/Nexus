@@ -6,3 +6,23 @@ export async function getFriend(friendId: string | null) {
   });
   return res;
 }
+
+export async function sendMessage(receiverId: string | null, content: string, chatRoomId: string) {
+  return await fetchy({
+    url: '/chat/send',
+    method: 'POST',
+    data: {
+      receiverId,
+      content,
+      chatRoomId
+    }
+  })
+}
+
+export async function getMessages(chatRoomId: string | null) {
+  const res = await fetchy({
+    url: `/chat/messages/${chatRoomId}`,
+    method: "GET",
+  });
+  return res;
+}

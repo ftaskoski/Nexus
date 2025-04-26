@@ -72,6 +72,42 @@ namespace Nexus.Controllers
             var reply = await _chatService.GetAiResponse(request.Message);
             return Ok(new { reply });
         }
+
+        [HttpPost("send")]
+        public async Task<IActionResult> SendMessage([FromBody] MessageModel message)
+        {
+            if (message == null || string.IsNullOrEmpty(message.Content))
+            {
+                return BadRequest("Invalid message.");
+            }
+            var chatRoom = await _dbContext.ChatRooms
+                .FirstOrDefaultAsync(cr => cr.ChatRoomId == message.ChatRoomId);
+            if (chatRoom == null)
+            {
+                return NotFound("Chat room not found.");
+            }
+            message.SenderId = _systemUser.Id;
+            _dbContext.Messages.Add(message);
+            await _dbContext.SaveChangesAsync();
+           
+            return Ok(new { message });
+        }
+
+        [HttpGet("messages/{chatRoomId}")]
+        public async Task<IActionResult> GetMessages(string chatRoomId)
+        {
+            var messages = await _dbContext.Messages
+                .Where(m => m.ChatRoomId == chatRoomId)
+                .OrderBy(m => m.SentAt)
+                .ToListAsync();
+            if (messages == null || messages.Count == 0)
+            {
+                return NotFound("No messages found.");
+            }
+            return Ok(messages);
+        }
+
+
     }
 
 

@@ -34,14 +34,15 @@ namespace Nexus.Repositories
 
         public async Task<FriendModel?> GetFriend(Guid id)
         {
-            var user = await GetByIdAsync(id);
-
-            return user != null ? new FriendModel
-            {
-                Id = user.Id,
-                Username = user.Username,
-                IsOnline = user.IsOnline,
-            } : null;
+            return await _dbContext.Users
+                .Where(u => u.Id == id)
+                .Select(user => new FriendModel
+                {
+                    Id = user.Id,
+                    Username = user.Username,
+                    IsOnline = user.IsOnline,
+                })
+                .FirstOrDefaultAsync();
         }
 
     }

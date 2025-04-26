@@ -1,0 +1,19 @@
+CREATE TABLE Messages (
+    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    SenderId UNIQUEIDENTIFIER NOT NULL,
+    ReceiverId UNIQUEIDENTIFIER NOT NULL,
+    Content NVARCHAR(MAX) NOT NULL,
+    SentAt DATETIME DEFAULT GETDATE(),
+    ChatRoomId NVARCHAR(255) NOT NULL,
+    
+    CONSTRAINT FK_Messages_ChatRoom FOREIGN KEY (ChatRoomId) 
+        REFERENCES ChatRooms(ChatRoomId) ON DELETE CASCADE,
+    
+    CONSTRAINT FK_Messages_Sender FOREIGN KEY (SenderId) 
+        REFERENCES Users(Id) ON DELETE NO ACTION,
+        
+    CONSTRAINT FK_Messages_Receiver FOREIGN KEY (ReceiverId) 
+        REFERENCES Users(Id) ON DELETE NO ACTION
+);
+
+
