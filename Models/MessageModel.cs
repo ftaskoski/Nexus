@@ -12,7 +12,7 @@
         public MessageModel()
         {
             Id = Guid.NewGuid();
-            SentAt = DateTime.UtcNow;
+            SentAt = DateTime.Now;
         }
     }
 }
