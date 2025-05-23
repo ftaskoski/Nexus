@@ -91,28 +91,34 @@ const friend = ref<Friend | null>(null)
 const router = useRouter()
 const route = useRoute()
 const chatRoomId = route.params.id as string
-const signalRConnection = inject('messageSignalR') as signalR.HubConnection;
+const signalRConnection = inject('messageSignalR') as HubConnection;
 
 let message = ref<string>('')
 let messages = ref<Message[]>([])
 let skip = ref<number>(0)
 let loading = ref<boolean>(false)
+let isConnected = ref<boolean>(false)
 const take = 5
 
 async function sendMsg() {
+  if (!message.value.trim()) return;
+  
+  await ensureConnection();
+  
   const res = await sendMessage(friendId, message.value, chatRoomId);
   message.value = '';
 }
 
-signalRConnection.on("ReceiveMessage", (newMessage) => {
-  
+function handleReceiveMessage(newMessage: Message) {
+    
   if (!messages.value.some(m => m.id === newMessage.id)) {
     messages.value.push(newMessage);
     nextTick(() => {
-      scrollContainer.value?.scrollTo(0, scrollContainer.value.scrollHeight);
+      scrollToBottom();
     });
   }
-});
+}
+
 async function getMsgs() {
   const res = await getMessages(chatRoomId, skip.value, take)
   return res;
@@ -128,6 +134,12 @@ async function getData() {
 }
 
 const scrollContainer = ref<HTMLElement | null>(null)
+
+function scrollToBottom() {
+  if (scrollContainer.value) {
+    scrollContainer.value.scrollTo(0, scrollContainer.value.scrollHeight);
+  }
+}
 
 async function handleScroll() {
   if (!scrollContainer.value) return;
@@ -146,52 +158,65 @@ async function handleScroll() {
 }
 
 async function ensureConnection() {
-  if (signalRConnection.state === HubConnectionState.Disconnected) {
-    
+  if (!signalRConnection) {
+    console.error('SignalR connection not available');
+    return false;
+  }
+
+    if (signalRConnection.state === HubConnectionState.Disconnected) {
       await signalRConnection.start();
-      
+    }
+    
+    if (signalRConnection.state === HubConnectionState.Connected) {
       await signalRConnection.invoke("JoinChatRoom", chatRoomId);
-      
+      isConnected.value = true;
       return true;
- 
-  }
+    }
+
   
-  if (signalRConnection.state === HubConnectionState.Connected) {
-   
-      await signalRConnection.invoke("JoinChatRoom", chatRoomId);
-      
-      return true;
-   
-  }
+  return false;
+}
+
+function setupSignalRHandlers() {
+  if (!signalRConnection) return;
+
+  signalRConnection.off("ReceiveMessage");
   
+  signalRConnection.on("ReceiveMessage", handleReceiveMessage);
+
+  signalRConnection.onclose((error) => {
+    console.error('SignalR connection closed:', error);
+    isConnected.value = false;
+    
+    setTimeout(async () => {
+      await ensureConnection();
+    }, 3000);
+  });
+
+  signalRConnection.onreconnected((connectionId) => {
+    isConnected.value = true;
+    signalRConnection.invoke("JoinChatRoom", chatRoomId)
+      .catch(err => console.error("Error rejoining chat room after reconnect:", err));
+  });
 }
 
 onMounted(async() => {
   await getData();
-  scrollContainer.value?.scrollTo(0, scrollContainer.value.scrollHeight);
+  scrollToBottom();
 
-  signalRConnection.on("ReceiveMessage", (newMessage) => {
-    if (!messages.value.some(m => m.id === newMessage.id)) {
-      messages.value.push(newMessage);
-      nextTick(() => {
-        scrollContainer.value?.scrollTo(0, scrollContainer.value.scrollHeight);
-      });
-    }
-  });
-
-  signalRConnection.onclose((error) => {
-    console.error('SignalR connection closed:', error);
-  });
+  setupSignalRHandlers();
   
   await ensureConnection();
 });
 
 onUnmounted(() => {
-  signalRConnection.off("ReceiveMessage");
-  
-  if (signalRConnection.state === HubConnectionState.Connected) {
-    signalRConnection.invoke("LeaveChatRoom", chatRoomId)
-      .catch(err => console.error("Error leaving chat room:", err));
+  if (signalRConnection) {
+    signalRConnection.off("ReceiveMessage");
+    
+    if (signalRConnection.state === HubConnectionState.Connected) {
+      signalRConnection.invoke("LeaveChatRoom", chatRoomId)
+        .catch(err => console.error("Error leaving chat room:", err));
+    }
   }
 });
 </script>
