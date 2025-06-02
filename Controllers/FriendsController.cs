@@ -20,7 +20,7 @@ namespace Nexus.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<FriendModel>> GetFriends()
+        public async Task<object> GetFriends()
         {
             return await _friendsRepository.GetFriendsAsync(_systemUser.Id);
 

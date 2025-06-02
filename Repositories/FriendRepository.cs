@@ -9,15 +9,17 @@ namespace Nexus.Repositories
     public class FriendsRepository : Repository<FriendModel>,IFriendsRepository
     {
         private readonly AppDbContext _dbContext;
+        private readonly ISystemUser _systemUser;
 
-        public FriendsRepository(AppDbContext dbContext) : base(dbContext)
+        public FriendsRepository(AppDbContext dbContext,ISystemUser systemUser) : base(dbContext)
         {
             _dbContext = dbContext;
+            _systemUser = systemUser ?? throw new ArgumentNullException(nameof(systemUser));
         }
 
-        public async Task<IEnumerable<FriendModel>> GetFriendsAsync(Guid userId)
+        public async Task<object> GetFriendsAsync(Guid userId)
         {
-            return await _dbContext.Friendships
+            var friends = await _dbContext.Friendships
                 .Where(f => f.User1Id == userId || f.User2Id == userId)
                 .Join(
                     _dbContext.Users,
@@ -30,6 +32,28 @@ namespace Nexus.Repositories
                         IsOnline = user.IsOnline,
                     })
                 .ToListAsync();
+
+            var friendsWithMessages = new List<object>();
+
+            foreach (var friend in friends)
+            {
+                var lastMessage = await _dbContext.Messages
+                    .Where(m => (m.SenderId == userId && m.ReceiverId == friend.Id) ||
+                               (m.SenderId == friend.Id && m.ReceiverId == userId))
+                    .OrderByDescending(m => m.SentAt)
+                    .Select(m => new { m.Content }) 
+                    .FirstOrDefaultAsync();
+
+                friendsWithMessages.Add(new
+                {
+                     friend.Id,
+                     friend.Username,
+                     friend.IsOnline,
+                     LastMessage = lastMessage?.Content ?? "No messages yet",
+                });
+            }
+
+            return new { friends = friendsWithMessages };
         }
 
         public async Task<FriendModel?> GetFriend(Guid id)

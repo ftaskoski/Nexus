@@ -21,12 +21,12 @@
             class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"
           ></div>
         </div>
-        <div class="flex-1">
+        <div class="flex-1 truncate">
           <div class="flex items-center justify-between">
             <span class="font-medium">{{ friend.username }}</span>
           </div>
           <p class="text-sm text-gray-600 truncate">
-            Latest message preview goes here...
+            {{ friend.lastMessage }}
           </p>
         </div>
       </div>
@@ -50,7 +50,7 @@ const signalR= inject('signalR1') as signalR.HubConnection;
 
 async function getFriends(){
   const res = await getFriendsData();
-  friends.value = res.payload;
+  friends.value = res.payload.friends;
 }
 
 signalR.on("UserStatusChanged", getFriends);
