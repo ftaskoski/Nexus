@@ -3,4 +3,5 @@ export interface Friend{
     username: string
     isOnline: boolean
     lastMessage?: string
+    sentAt: string
 }

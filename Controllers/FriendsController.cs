@@ -32,6 +32,12 @@ namespace Nexus.Controllers
             return await _friendsRepository.GetFriend(id);
         }
 
+        [HttpGet("recent")]
+        public async Task<object> GetRecentChats()
+        {
+            return await _friendsRepository.GetRecentChatsAsync(_systemUser.Id);
+        }
+
 
     }
 }

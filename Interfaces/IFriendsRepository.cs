@@ -7,5 +7,6 @@ namespace Nexus.Interfaces
     {
         Task<object> GetFriendsAsync(Guid userId);
         Task<FriendModel?> GetFriend(Guid id);
+        Task<object> GetRecentChatsAsync(Guid userId);
     }
 }

@@ -34,7 +34,7 @@
               >
                 <p>{{ msg.content }}</p>
                 <div :class="['text-xs mt-1', msg.receiverId === friendId ? 'text-blue-100' : 'text-gray-500']">
-                  <span>{{ new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
+                  <span>{{ formatChatTime(msg.sentAt) }}</span>
                 </div>
               </div>
             </div>
@@ -85,6 +85,7 @@ import { getFriend, sendMessage, getMessages } from './store';
 import { useRouter, useRoute } from 'vue-router';
 import { onMounted, ref, nextTick, onUnmounted, inject } from 'vue';
 import type { Message } from './types';
+import { formatChatTime } from '@/utils/dateUtils';
 
 const friendId = localStorage.getItem('friendId')
 const friend = ref<Friend | null>(null)

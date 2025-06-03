@@ -22,20 +22,28 @@
         <div class="p-4 space-y-4">
           <div class="space-y-2">
             <h2 class="text-sm font-medium text-gray-500">Recent Chats</h2>
-            <div class="space-y-2">
-              <div v-for="i in 5" :key="i" 
+            <div class="space-y-2 overflow-y-auto h-96">
+              <div v-for="recentChat in recentChats" :key="recentChat.id" 
+                @click="toChat(recentChat.id)"
                 class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
               >
-                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Icon icon="user" class="text-blue-600" />
-                </div>
-                <div class="flex-1">
-                  <div class="flex items-center justify-between">
-                    <span class="font-medium">User Name</span>
-                    <span class="text-sm text-gray-500">2m ago</span>
+                <div class="relative">
+                  <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Icon icon="user" size="28" class="text-blue-600" />
                   </div>
+                  
+                   <div v-if="recentChat.isOnline"class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                </div>
+
+                <div class="flex-1">
+    
+                  <div class="flex items-center justify-between">
+                    <span class="font-medium">{{ recentChat.username }}</span>
+                    <span class="text-sm text-gray-500">{{formatChatTime(recentChat.sentAt)}} </span>
+                  </div>
+                  
                   <p class="text-sm text-gray-600 truncate">
-                    Latest message preview goes here...
+                    {{ recentChat.lastMessage || 'No messages yet' }}
                   </p>
                 </div>
               </div>
@@ -79,10 +87,11 @@ import Input from '@/components/Input.vue';
 import { ref, onMounted, onUnmounted } from 'vue';
 import { HubConnection, HubConnectionState } from "@microsoft/signalr";
 import { inject } from 'vue';
-import type { OnlineFriend } from './types';
-import { getFriendsData } from './store';
+import type { OnlineFriend, RecentChat } from './types';
+import { getFriendsData, getRecentChats } from './store';
 import { getChatId } from '@/components/Panels/Messages/store';
 import { useRouter } from 'vue-router';
+import { formatChatTime } from '@/utils/dateUtils';
 
 const signalRConnection = inject('signalR1') as signalR.HubConnection;
 const signalRConnection2 = inject('signalR2') as signalR.HubConnection;
@@ -92,7 +101,7 @@ const signalR = inject("signalR1") as HubConnection;
 const searchQuery = ref<string>('');
 const onlineFriends = ref<OnlineFriend[]>([]);
 
-
+const recentChats = ref<RecentChat[]>([]);
 
 
 const fetchOnlineFriends = async () => {
@@ -101,6 +110,12 @@ const fetchOnlineFriends = async () => {
     const data = response.payload || [];
     onlineFriends.value = data;
  
+};
+
+const getRecentChatsData = async () => {
+  const response = await getRecentChats();
+  const data = response.payload || [];
+  recentChats.value = data;
 };
 
 async function toChat(id: string) {
@@ -116,8 +131,10 @@ signalRConnection2.on("FriendRequestAccepted", handleUserStatusChanged);
 
 onMounted(async () => {
 
-
-    await fetchOnlineFriends();
+    await Promise.all([
+      getRecentChatsData(),
+      fetchOnlineFriends()
+    ]);
     
     if (signalR.state === HubConnectionState.Disconnected) {
       await signalRConnection.start();

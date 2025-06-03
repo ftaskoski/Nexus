@@ -41,7 +41,7 @@ namespace Nexus.Repositories
                     .Where(m => (m.SenderId == userId && m.ReceiverId == friend.Id) ||
                                (m.SenderId == friend.Id && m.ReceiverId == userId))
                     .OrderByDescending(m => m.SentAt)
-                    .Select(m => new { m.Content }) 
+                    .Select(m => new { m.Content, m.SentAt }) 
                     .FirstOrDefaultAsync();
 
                 friendsWithMessages.Add(new
@@ -49,13 +49,61 @@ namespace Nexus.Repositories
                      friend.Id,
                      friend.Username,
                      friend.IsOnline,
-                     LastMessage = lastMessage?.Content ?? "No messages yet",
+                     lastMessage?.SentAt,
+                    LastMessage = lastMessage?.Content ?? "No messages yet",
                 });
             }
 
             return new { friends = friendsWithMessages };
         }
 
+        public async Task<object> GetRecentChatsAsync(Guid userId)
+        {
+            var friendsWithLastMessage = await _dbContext.Friendships
+                .Where(f => f.User1Id == userId || f.User2Id == userId)
+                .Join(
+                    _dbContext.Users,
+                    friendship => friendship.User1Id == userId ? friendship.User2Id : friendship.User1Id,
+                    user => user.Id,
+                    (friendship, user) => new
+                    {
+                        User = new FriendModel
+                        {
+                            Id = user.Id,
+                            Username = user.Username,
+                            IsOnline = user.IsOnline,
+                        },
+                        LastMessageTime = _dbContext.Messages
+                            .Where(m => (m.SenderId == userId && m.ReceiverId == user.Id) ||
+                                         (m.SenderId == user.Id && m.ReceiverId == userId))
+                            .Max(m => (DateTime?)m.SentAt)
+                    })
+                .ToListAsync();
+            var recentChats = new List<object>();
+
+            foreach (var friend in friendsWithLastMessage
+                .OrderByDescending(f => f.LastMessageTime ?? DateTime.MinValue)
+                .Take(5))
+            {
+                var lastMessage = await _dbContext.Messages
+                    .Where(m => (m.SenderId == userId && m.ReceiverId == friend.User.Id) ||
+                               (m.SenderId == friend.User.Id && m.ReceiverId == userId))
+                    .OrderByDescending(m => m.SentAt)
+                    .Select(m => new { m.Content, m.SentAt })
+                    .FirstOrDefaultAsync();
+
+                recentChats.Add(new
+                {
+                    friend.User.Id,
+                    friend.User.Username,
+                    friend.User.IsOnline,
+                    lastMessage?.SentAt,
+                    LastMessage = lastMessage?.Content ?? "No messages yet",
+                });
+            }
+
+            return recentChats;
+        }
         public async Task<FriendModel?> GetFriend(Guid id)
         {
             return await _dbContext.Users

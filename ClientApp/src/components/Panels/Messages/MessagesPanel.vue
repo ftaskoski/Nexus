@@ -29,6 +29,9 @@
             {{ friend.lastMessage }}
           </p>
         </div>
+        <div class="text-sm text-gray-500">
+          <span>{{ formatChatTime(friend.sentAt) }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -42,6 +45,7 @@ import { useRouter } from 'vue-router'
 
 import type { Friend } from "./types";
 import { getFriendsData } from "./store";
+import { formatChatTime } from "@/utils/dateUtils";
 
 let friends = ref<Friend[]>([]);
 const router  = useRouter()
