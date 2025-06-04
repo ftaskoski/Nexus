@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Card :grow="true">
+    <Card :grow="true" :loading="loading">
       <template #header>
         <div class="flex items-center justify-between gap-2 p-4 border-b">
           <h1 class="text-xl font-semibold">Messages</h1>
@@ -102,7 +102,7 @@ const searchQuery = ref<string>('');
 const onlineFriends = ref<OnlineFriend[]>([]);
 
 const recentChats = ref<RecentChat[]>([]);
-
+let loading = ref<boolean>(false);
 
 const fetchOnlineFriends = async () => {
  
@@ -127,14 +127,19 @@ async function toChat(id: string) {
 async function handleUserStatusChanged () {
   await fetchOnlineFriends();
 } 
+
+async function getData(){
+  loading.value = true;
+  await getRecentChatsData(),
+  await fetchOnlineFriends()
+  loading.value = false;  
+}
+
 signalRConnection2.on("FriendRequestAccepted", handleUserStatusChanged);
 
 onMounted(async () => {
 
-    await Promise.all([
-      getRecentChatsData(),
-      fetchOnlineFriends()
-    ]);
+    await getData();
     
     if (signalR.state === HubConnectionState.Disconnected) {
       await signalRConnection.start();
