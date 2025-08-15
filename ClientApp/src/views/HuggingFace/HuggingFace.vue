@@ -28,7 +28,7 @@
             </div>
           </div>
 
-          <ChatLoading v-if="isLoading" />
+          <IsTyping v-if="isLoading" />
         </div>
       </template>
 
@@ -66,7 +66,7 @@ import Icon from '@/components/Icon.vue';
 import Input from '@/components/Input.vue';
 import Button from '@/components/Button.vue';
 import { fetchy } from "@/plugins/axios";
-import ChatLoading from "@/components/ChatLoading.vue";
+import IsTyping from "@/components/IsTyping.vue";
 import hljs from "highlight.js"; 
 import "highlight.js/styles/github.css"; 
 

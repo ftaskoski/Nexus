@@ -19,8 +19,8 @@ const router = createRouter({
   ],
 })
 
-await Status();
-router.beforeEach((to, from, next) => {
+router.beforeEach(async(to, from, next) => {
+  await Status();
   if (to.meta.requiresAuth && !isAuthenticated.value) {
     next("/login");
   } else if ((to.path === '/login' || to.path === '/register') && isAuthenticated.value) {

@@ -29,5 +29,17 @@ namespace Nexus.Hubs
         {
             await base.OnDisconnectedAsync(exception);
         }
+
+        public async Task StartTyping(string chatRoomId, string username)
+        {
+            await Clients.OthersInGroup(chatRoomId).SendAsync("UserTyping", username);
+        }
+
+        public async Task StopTyping(string chatRoomId, string username)
+        {
+            await Clients.OthersInGroup(chatRoomId).SendAsync("UserStoppedTyping", username);
+        }
+
+
     }
 }
