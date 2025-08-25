@@ -1,37 +1,37 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import Icon from "./Icon.vue";
+import { ref, watch } from 'vue'
+import Icon from './Icon.vue'
 
 interface Props {
-  id: string;
-  type?: string;
-  modelValue: string;
-  placeholder?: string;
-  label?: string;
-  icon?: string; 
-  iconColor?: string;
-  iconAlign?: boolean;
-  iconFill?: string;
-  required?: boolean;
-  fillRule?:string;
+  id:           string
+  type?:        string
+  modelValue:   string
+  placeholder?: string
+  label?:       string
+  icon?:        string
+  iconColor?:   string
+  iconAlign?:   boolean
+  iconFill?:    string
+  required?:    boolean
+  fillRule?:    string
 
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 
-const emits = defineEmits(["update:modelValue"]);
+const emits = defineEmits( [ 'update:modelValue' ] )
 
-const localValue = ref(props.modelValue);
+const localValue = ref( props.modelValue )
 
-watch(() => props.modelValue, (newVal) => {
-  localValue.value = newVal;
-});
+watch(() => props.modelValue, ( newVal ) => {
+  localValue.value = newVal
+})
 
-const updateValue = (event: Event) => {
-  const value = (event.target as HTMLInputElement).value;
-  localValue.value = value;
-  emits('update:modelValue', value);
-};
+function updateValue( event: Event ) {
+  const value = ( event.target as HTMLInputElement ).value
+  localValue.value = value
+  emits( 'update:modelValue', value )
+}
 </script>
 
 <template>
@@ -45,16 +45,15 @@ const updateValue = (event: Event) => {
       </div>
       <input
         :id="id"
-        :type="type"
         v-model="localValue"
-        @input="updateValue"
+        :type="type"
         :placeholder="placeholder"
         :required="required"
+        class="block w-full py-3 border-0 ring-1 ring-inset ring-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 sm:text-sm"
         :class="[
-          'block w-full py-3 border-0 ring-1 ring-inset ring-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 sm:text-sm',
-          icon ? 'pl-10 pr-3' : 'px-3' 
-        ]"
-      />
+          icon ? 'pl-10 pr-3' : 'px-3',
+        ]" @input="updateValue"
+      >
     </div>
   </div>
 </template>

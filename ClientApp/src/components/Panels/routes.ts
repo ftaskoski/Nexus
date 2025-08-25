@@ -1,17 +1,18 @@
-import { messagesRoutes } from "./Messages/routes";
-import { searchRoutes } from "./Search/routes";
-import { notificationsRoutes } from "./Notifications/routes";
-import PanelLayout from "./PanelLayout.vue";
+import { messagesRoutes } from './Messages/routes'
+import { notificationsRoutes } from './Notifications/routes'
+import PanelLayout from './PanelLayout.vue'
+import { searchRoutes } from './Search/routes'
+
 export const panelRoutes = {
-  path: "/panel",
+  path:      '/panel',
   component: PanelLayout,
-  meta: {
+  meta:      {
     requiresAuth: true,
-    panel: true,
+    panel:        true,
   },
   children: [
     searchRoutes,
     messagesRoutes,
     notificationsRoutes,
   ]
-};
+}

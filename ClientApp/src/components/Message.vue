@@ -1,39 +1,38 @@
 <script setup lang="ts">
-import Icon from './Icon.vue';
-import { watch} from 'vue';
+import { watch } from 'vue'
+import Icon from './Icon.vue'
 
 interface Props {
-  type?: 'error' | 'warning' | 'success' | 'info';
-  show?: boolean;
-  timeout?: number;
-  autoLeave?: boolean;
+  type?:      'error' | 'warning' | 'success' | 'info'
+  show?:      boolean
+  timeout?:   number
+  autoLeave?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  type: 'error',
-  show: false,
-  timeout: 1500,
+const props = withDefaults( defineProps<Props>(), {
+  type:      'error',
+  show:      false,
+  timeout:   1500,
   autoLeave: true,
-});
+})
 
 const emit = defineEmits<{
-  (eventName: 'close', value: void): void;
-}>();
+  ( eventName: 'close', value: void ): void
+}>()
 
-const closeMessage = () => emit('close');
+const closeMessage = () => emit( 'close' )
 
 watch(
   () => props.show,
-  (newVal) => {
-    if (newVal && props.autoLeave) {
+  ( newVal ) => {
+    if ( newVal && props.autoLeave ) {
       setTimeout(() => {
-        closeMessage();
-      }, props.timeout);
+        closeMessage()
+      }, props.timeout )
     }
   }
-);
+)
 </script>
-
 
 <template>
 

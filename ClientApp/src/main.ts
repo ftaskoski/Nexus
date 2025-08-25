@@ -1,10 +1,10 @@
-import './assets/main.css'
 import { createApp } from 'vue'
 import App from './App.vue'
-import router from './router'
 import SignalRPlugin from './plugins/signalr'
+import router from './router'
+import './assets/main.css'
 
-const app = createApp(App)
-app.use(router)
-app.use(SignalRPlugin)
-app.mount('#app')
+const app = createApp( App )
+app.use( router )
+app.use( SignalRPlugin )
+app.mount( '#app' )

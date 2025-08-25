@@ -1,7 +1,48 @@
+<script setup lang="ts">
+import type { Friend } from './types'
+import { HubConnectionState } from '@microsoft/signalr'
+import { inject, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import Icon from '@/components/Icon.vue'
+
+import { formatChatTime } from '@/utils/dateUtils'
+import { getChatId, getFriendsData } from './store'
+
+const friends = ref<Friend[]>( [] )
+const router  = useRouter()
+
+const signalR = inject( 'signalR1' ) as signalR.HubConnection
+
+async function getFriends() {
+  const res = await getFriendsData()
+  friends.value = res.payload.friends
+}
+
+signalR.on( 'UserStatusChanged', getFriends )
+
+onMounted( async () => {
+
+  await getFriends()
+
+  if ( signalR.state === HubConnectionState.Disconnected ) {
+    await signalR.start()
+  }
+})
+
+async function toChat( id: string ) {
+  const res = await getChatId( id )
+  router.push( `/chat/${res.payload.chatRoomId}` )
+  localStorage.setItem( 'friendId', id )
+}
+
+</script>
+
 <template>
   <div>
     <div class="mb-4">
-      <h2 class="text-lg font-semibold">Messages</h2>
+      <h2 class="text-lg font-semibold">
+        Messages
+      </h2>
     </div>
     <div class="space-y-4">
       <div
@@ -19,7 +60,7 @@
           <div
             v-if="friend.isOnline"
             class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"
-          ></div>
+          />
         </div>
         <div class="flex-1 truncate">
           <div class="flex items-center justify-between">
@@ -36,44 +77,3 @@
     </div>
   </div>
 </template>
-<script setup lang="ts">
-import Icon from "@/components/Icon.vue";
-import {  HubConnectionState } from "@microsoft/signalr";
-import { getChatId } from "./store";
-import { onMounted, ref, inject } from "vue";
-import { useRouter } from 'vue-router'
-
-import type { Friend } from "./types";
-import { getFriendsData } from "./store";
-import { formatChatTime } from "@/utils/dateUtils";
-
-let friends = ref<Friend[]>([]);
-const router  = useRouter()
-
-const signalR= inject('signalR1') as signalR.HubConnection;
-
-async function getFriends(){
-  const res = await getFriendsData();
-  friends.value = res.payload.friends;
-}
-
-signalR.on("UserStatusChanged", getFriends);
-
-
-onMounted(async () => {
-
-  await getFriends();
-
-  if (signalR.state === HubConnectionState.Disconnected) {
-      await signalR.start();
-    }
-});
-
-async function toChat(id: string) {
-  const res = await getChatId(id);
-  router.push(`/chat/${res.payload.chatRoomId}`)
-  localStorage.setItem('friendId',id)
-}
-
-
-</script>

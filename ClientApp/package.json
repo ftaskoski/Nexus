@@ -1,8 +1,8 @@
 {
   "name": "clientapp",
+  "type": "module",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
@@ -11,6 +11,7 @@
     "type-check": "vue-tsc --build"
   },
   "dependencies": {
+    "@antfu/eslint-config": "^5.2.1",
     "@microsoft/signalr": "^8.0.7",
     "axios": "^1.7.9",
     "highlight.js": "^11.11.1",

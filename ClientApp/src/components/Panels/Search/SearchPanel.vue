@@ -1,23 +1,101 @@
+<script setup lang="ts">
+import type { UserSearchResult } from './types'
+import { ref } from 'vue'
+import Icon from '@/components/Icon.vue'
+import Input from '@/components/Input.vue'
+import SearchRow from '@/components/Rows/SearchRow.vue'
+import { fetchy } from '@/plugins/axios'
+
+const searchQuery = ref<string>( '' )
+let debounce: number | undefined
+const searchResults = ref<UserSearchResult[]>( [] )
+
+function getIconTitle( result: UserSearchResult ): string {
+  if ( result.status === null )
+    return 'Add friend'
+  if ( result.status === 0 ) {
+    return result.isIncoming ? 'User sent you a friend request' : 'Pending friend request'
+  }
+  if ( result.status === 1 )
+    return 'You are already friends'
+  return ''
+}
+
+function getIconType( result: UserSearchResult ): string {
+  if ( result.status === null )
+    return 'add-user'
+  if ( result.status === 0 ) {
+    return result.isIncoming ? 'incoming-friend-request' : 'pending'
+  }
+  if ( result.status === 1 )
+    return 'accept-friend-request'
+  return 'add-user'
+}
+
+function handleFriendAction( result: UserSearchResult ) {
+  if ( result.status === null ) {
+    sendFriendRequest( result.id )
+  }
+
+}
+
+async function searchForFriends() {
+  if ( !searchQuery.value.trim()) {
+    searchResults.value = []
+    return
+  }
+  searchResults.value = []
+  clearTimeout( debounce )
+  debounce = setTimeout( async () => {
+    const res = await fetchy<UserSearchResult[]>({
+      url:    `friendrequests/${searchQuery.value}`,
+      method: 'GET',
+    })
+
+    searchResults.value = res.payload || []
+  }, 500 )
+}
+
+async function sendFriendRequest( receiverId: string ) {
+  const res = await fetchy({
+    url:    'friendrequests/add-friend',
+    method: 'POST',
+    data:   { receiverId },
+  })
+  const user = searchResults.value.find( u => u.id === receiverId )
+  if ( user ) {
+    user.status = 0
+  }
+}
+
+function clearSearch() {
+  searchQuery.value = ''
+  searchResults.value = []
+}
+</script>
+
 <template>
   <div>
-    <h2 class="text-lg font-semibold mb-4">Search</h2>
+    <h2 class="text-lg font-semibold mb-4">
+      Search
+    </h2>
 
     <div class="space-y-1 relative">
       <Input
+        id="search"
         v-model="searchQuery"
         placeholder="Search for friends..."
         class="w-full pr-10"
         icon="search"
         icon-color="gray"
         icon-fill="none"
-        id="search"
         @input="searchForFriends"
       />
       <div
-        @click="clearSearch"
         class="absolute inset-y-0 right-9 -top-1 pr-3 flex items-center cursor-pointer text-gray-400 hover:text-gray-500"
+        @click="clearSearch"
       >
-        <Icon icon="cancel" strokeWidth="2" />
+        <Icon icon="cancel" stroke-width="2" />
       </div>
     </div>
 
@@ -45,75 +123,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from "vue";
-import Input from "@/components/Input.vue";
-import { fetchy } from "@/plugins/axios";
-import type { UserSearchResult } from "./types";
-import Icon from "@/components/Icon.vue";
-import SearchRow from "@/components/Rows/SearchRow.vue";
-
-const searchQuery = ref<string>("");
-let debounce: number | undefined = undefined;
-const searchResults = ref<UserSearchResult[]>([]);
-
-function getIconTitle(result: UserSearchResult): string {
-  if (result.status === null) return "Add friend";
-  if (result.status === 0) {
-    return result.isIncoming ? "User sent you a friend request" : "Pending friend request";
-  }
-  if(result.status === 1) return "You are already friends";
-  return "";
-}
-
-function getIconType(result: UserSearchResult): string {
-  if (result.status === null) return "add-user";
-  if (result.status === 0) {
-    return result.isIncoming ? "incoming-friend-request" : "pending";
-  }
-  if(result.status === 1) return "accept-friend-request";
-  return "add-user"; 
-}
-
-function handleFriendAction(result: UserSearchResult) {
-  if (result.status === null) {
-    sendFriendRequest(result.id);
-  }
- 
-}
-
-async function searchForFriends() {
-  if (!searchQuery.value.trim()) {
-    searchResults.value = [];
-    return;
-  }
-  searchResults.value = [];
-  clearTimeout(debounce);
-  debounce = setTimeout(async () => {
-    const res = await fetchy<UserSearchResult[]>({
-      url: `friendrequests/${searchQuery.value}`,
-      method: "GET",
-    });
-
-    searchResults.value = res.payload || [];
-  }, 500);
-}
-
-async function sendFriendRequest(receiverId: string) {
-  const res = await fetchy({
-    url: "friendrequests/add-friend",
-    method: "POST",
-    data: { receiverId },
-  });
-  const user = searchResults.value.find((u) => u.id === receiverId);
-  if (user) {
-    user.status = 0;
-  }
-}
-
-function clearSearch() {
-  searchQuery.value = "";
-  searchResults.value = [];
-}
-</script>

@@ -1,12 +1,53 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import Button from '@/components/Button.vue'
+import Card from '@/components/Card.vue'
+import Icon from '@/components/Icon.vue'
+import Input from '@/components/Input.vue'
+import Message from '@/components/Message.vue'
+import { fetchy } from '@/plugins/axios'
+import { successfulAuth } from '../../../authStore/store'
+
+const email = ref<string>( '' )
+const password = ref<string>( '' )
+const loading = ref<boolean>( false )
+const showPassword = ref<boolean>( false )
+const error = ref<boolean>( false )
+const router = useRouter()
+
+async function handleSubmit() {
+  loading.value = true
+  const response = await fetchy({
+    url:    'user/login',
+    method: 'POST',
+    data:   { email: email.value, password: password.value },
+  })
+
+  if ( response.payload ) {
+    loading.value = false
+    successfulAuth( router )
+  }
+
+  if ( response.errors ) {
+    loading.value = false
+    error.value = true
+  }
+};
+
+</script>
+
 <template>
   <Card>
     <template #header>
       <div class="text-center">
- 
+
         <h2 class="mt-4 text-2xl font-semibold text-gray-900">
           Welcome to <span class="logo">Nexus</span>
         </h2>
-        <p class="mt-2 text-sm text-gray-500">Sign in to continue messaging</p>
+        <p class="mt-2 text-sm text-gray-500">
+          Sign in to continue messaging
+        </p>
       </div>
     </template>
 
@@ -15,40 +56,39 @@
         <div class="space-y-1">
           <Input
             id="email"
+            v-model="email"
             type="email"
             placeholder="name@example.com"
             label="Email"
             icon="email"
-            iconFill="#9ca3af"
-            iconColor=""
+            icon-fill="#9ca3af"
+            icon-color=""
             required
-            v-model="email"
-            fillRule="evenodd"
-            :iconAlign="true"
+            fill-rule="evenodd"
+            :icon-align="true"
           />
         </div>
-        
 
         <div class="space-y-1 relative">
           <Input
             id="password"
+            v-model="password"
             :type="showPassword ? 'text' : 'password'"
             placeholder="Password"
             label="Password"
             icon="lock"
-            iconFill="#9ca3af"
-            iconColor=""
+            icon-fill="#9ca3af"
+            icon-color=""
             required
-            v-model="password"
-            fillRule="evenodd"
-            :iconAlign="true"
+            fill-rule="evenodd"
+            :icon-align="true"
           />
           <div
-            @click="showPassword = !showPassword"
             class="absolute inset-y-0 right-0 top-3.5 pr-3 flex items-center cursor-pointer text-gray-400 hover:text-gray-500"
+            @click="showPassword = !showPassword"
           >
-            <Icon v-if="showPassword" icon="visible-password" strokeWidth="2"/>
-            <Icon v-else icon="hidden-password"  strokeWidth="2" />
+            <Icon v-if="showPassword" icon="visible-password" stroke-width="2" />
+            <Icon v-else icon="hidden-password" stroke-width="2" />
           </div>
         </div>
 
@@ -60,11 +100,10 @@
             class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
             fill="currentColor"
             color="none"
-          >
-          </Icon>
+          />
 
-          {{ loading ? "Signing in..." : "Sign in" }}</Button
-        >
+          {{ loading ? "Signing in..." : "Sign in" }}
+        </Button>
       </form>
     </template>
 
@@ -84,52 +123,12 @@
         </a>
       </div>
 
-      <Message class="mt-2 flex justify-center items-center" :show="error"  @close="error = false" type="error" >
+      <Message class="mt-2 flex justify-center items-center" :show="error" type="error" @close="error = false">
         <p>Invalid email or password</p>
-    </Message>
+      </Message>
 
     </template>
 
   </Card>
 
-
 </template>
-
-<script setup lang="ts">
-import { ref } from "vue";
-import Card from "@/components/Card.vue";
-import Icon from "@/components/Icon.vue";
-import Button from "@/components/Button.vue";
-import Input from "@/components/Input.vue";
-import Message from "@/components/Message.vue";
-import { fetchy } from "@/plugins/axios";
-import { successfulAuth } from "../../../authStore/store";
-import { useRouter } from "vue-router";
-
-const email = ref<string>("");
-const password = ref<string>("");
-const loading = ref<boolean>(false);
-const showPassword = ref<boolean>(false);
-const error = ref<boolean>(false);
-const router = useRouter();
-
-async function handleSubmit() {
-  loading.value = true;
-  const response = await fetchy({
-    url: "user/login",
-    method: "POST",
-    data: { email: email.value, password: password.value },
-  });
-
-  if (response.payload) {
-    loading.value = false;
-    successfulAuth(router);
-    }
-
-  if (response.errors) {
-    loading.value = false;
-    error.value = true;
-  }
-};
-
-</script>

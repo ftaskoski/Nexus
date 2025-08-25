@@ -1,24 +1,25 @@
 <script setup lang="ts">
-import { computed} from 'vue'
-import { type IconName, icons } from '@/components/icon'
+import type { IconName } from '@/components/icon'
+import { computed } from 'vue'
+import { icons } from '@/components/icon'
 
 interface Props {
-  icon?: IconName
-  size?: string
-  color?: string
+  icon?:        IconName
+  size?:        string
+  color?:       string
   strokeWidth?: string
 }
 
 const props = withDefaults( defineProps<Props>(), {
-  icon  : 'none',
-  size  : '24px',
-  color : 'currentColor',
+  icon:        'none',
+  size:        '24px',
+  color:       'currentColor',
   strokeWidth: '1.5'
 })
 
 const icon = computed(() => {
-  return icons.find(i => i.name === props.icon) ?? icons[0];
-});
+  return icons.find( i => i.name === props.icon ) ?? icons[0]
+})
 </script>
 
 <template>
@@ -30,7 +31,7 @@ const icon = computed(() => {
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
     :stroke-width="strokeWidth"
-    >
+  >
     <path
       v-for="path in icon.path"
       :key="path"

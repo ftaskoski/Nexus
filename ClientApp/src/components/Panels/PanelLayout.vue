@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
-let isMounted = ref<boolean>(false)
+const isMounted = ref<boolean>( false )
 
-onMounted(() => isMounted.value = true)
+onMounted(() => isMounted.value = true )
 </script>
 
 <template>

@@ -1,8 +1,8 @@
 export interface Message {
-    id: string;
-    senderId: string;
-    receiverId: string;
-    content: string;
-    sentAt: string;
-    chatRoomId: string;
-  }
+  id:         string
+  senderId:   string
+  receiverId: string
+  content:    string
+  sentAt:     string
+  chatRoomId: string
+}

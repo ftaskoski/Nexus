@@ -8,22 +8,21 @@ import NotificationsSocket from './components/Panels/Notifications/Notifications
 
 <template>
   <div class="relative">
-    <Nav v-if="isAuthenticated"/>
-    <NotificationsSocket v-if="isAuthenticated"/>
+    <Nav v-if="isAuthenticated" />
+    <NotificationsSocket v-if="isAuthenticated" />
     <main>
       <RouterView />
     </main>
-    <div 
+    <div
       id="panel-target"
       class="fixed left-20 top-0 h-screen transition-all duration-300"
       :class="{
         'w-[400px] opacity-100': $route.meta?.panel,
-        'w-0 opacity-0': !$route.meta?.panel
+        'w-0 opacity-0': !$route.meta?.panel,
       }"
     />
   </div>
 </template>
-
 
 <style>
 ::-webkit-scrollbar {
